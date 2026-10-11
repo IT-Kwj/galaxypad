@@ -51,6 +51,7 @@ nothing on screens under 110 Hz.
 | --- | --- |
 | iPad Pro, Good Egg stage route via touch | PASS; 120.1 presents a second at 60.0 game steps a second |
 | iPad Pro, galaxy route (Observatory, Terrace, Good Egg) | PASS; game speed 59.9-60.0 steps a second throughout |
+| iPad Pro, all 47 stages through touch | 45 pass; the other two are the known cutscene stage and FishTunnel's scripted route, which fail the same way without Smooth Motion. All 128 ten-second gameplay windows held at least 59.9 game steps a second; every stage averaged at least 115 presents a second (lowest window 112.7, Ice Volcano). |
 | Does Mario move smoothly? (Mac, presented frames during a jump) | Blended: even steps of 2.5, 2.4, 2.5, 2.1 px. Camera only: 3.9, 0.7, 3.4, 0.6 px, a visible judder. Model blending is required, and works for Mario's own model class. |
 | iPhone 14 (60 Hz) with the mod on | Stays off; stage route PASS at 60 |
 | Native test suite | 90 of 90 pass |
