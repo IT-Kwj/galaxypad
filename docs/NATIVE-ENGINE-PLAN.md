@@ -37,14 +37,32 @@ Good Egg 9.1 ms. Lower render scales did not help; resolution is not the limit.
 | Save migration | GalaxyPad's save is the Wii big-endian form of the same layout. `wii_save_to_native.py` converts it, with field widths from the game's serializers. The iPhone's 121-star GalaxyPad save passes MacioGalaxy's native checker with identical values and loads into the restored Observatory on the Mac, the iPad and the iPhone (121 stars, 2,324 Star Bits, Luigi); it is installed in both test apps' normal save folders. |
 | Stage sweep | All 47 stages, scenario 1, through the touch layer on the iPhone: 45 pass. EpilogueDemoStage is a cutscene with no player. In FishTunnelGalaxy Mario dies in the scripted idle after the checks; it passes on the Mac and on the iPad at 16:9 and fails on the iPad at 4:3, so the camera and aspect change the scripted route. Worst two-minute gameplay p99 20.9 ms (OceanPhantomCave); largest single frame 33 ms. |
 
-120 FPS was scoped but not built. BlueWake's Smooth Motion lives in RecompCore's
-Aurora fork and is keyed to RecompCore's draw plans. Petari's frame loop draws
-state computed in `calcAnim` (`calcViewAndEntry` bakes the camera into J3D draw
-matrices), so model-keyed matrix interpolation is clean in principle, but a
-second presented frame per game step has to be made below the Wii XFB and
-retrace framework, at the Aurora command level. Next step: port the blend core
-onto upstream Aurora's per-draw uniforms, re-encode the finished frame, and
-measure on the ProMotion iPad.
+**Smooth Motion at 120 FPS: first version runs on the iPad Pro.** Having the
+game's source made this much smaller than BlueWake's renderer-level version.
+Each 60 Hz step is drawn twice. Before the normal frame, the game re-runs only
+its 3D view stage with the camera halfway between the previous step and this
+one, and each model's base transform blended the same way; joint animation,
+particles and the HUD show the step's own state. Camera cuts and teleports are
+not blended. It is a Mods entry, "Smooth Motion (120 Hz screens)", and does
+nothing on screens under 110 Hz.
+
+| Check | Result |
+| --- | --- |
+| iPad Pro, Good Egg stage route via touch | PASS; 120.1 presents a second at 60.0 game steps a second |
+| iPad Pro, galaxy route (Observatory, Terrace, Good Egg) | PASS; game speed 59.9-60.0 steps a second throughout |
+| Does Mario move smoothly? (Mac, presented frames during a jump) | Blended: even steps of 2.5, 2.4, 2.5, 2.1 px. Camera only: 3.9, 0.7, 3.4, 0.6 px, a visible judder. Model blending is required, and works for Mario's own model class. |
+| iPhone 14 (60 Hz) with the mod on | Stays off; stage route PASS at 60 |
+| Native test suite | 90 of 90 pass |
+
+The limit is the cost of a full draw. Without a budget, the restored
+Observatory ran at 56 game steps a second (93% speed, thermal state nominal):
+each step needed about 18 ms for two draws. Smooth Motion now draws an in-between
+frame only while the step with it fits in about 16 ms. Heavier views fall back to
+60 FPS at full speed. On the iPad most of the Observatory, the Terrace and Good
+Egg fit; parts of Good Egg do not. Making every view fit means cutting GX command
+processing (about 7-8 ms a draw there), the same Phase 2 work that gives the
+iPhone more headroom. Not yet judged by eye on the device; particles and the HUD
+still move at 60.
 
 
 ## Why now
@@ -254,6 +272,13 @@ BlueWake's Smooth Motion and Dusklight's `dusk::interp`:
 **Gate:** ProMotion iPad at 119–120 presents a second through a fixed route,
 at least 99% of draws blended, no visible pops on the route set; iPhone 14
 unaffected at 60; battery and thermal cost recorded.
+
+**Built (12 October):** steps 2-4 for the camera and every J3D model (including
+Mario's), at the game level: `SmoothMotion` re-runs the view stage per
+in-between frame instead of re-encoding Aurora's commands, and a frame budget
+keeps the game at full speed. Remaining: particles and HUD blending, a display
+link instead of back-to-back presents, the cost of a full draw (Phase 2), and an
+owner playtest by eye.
 
 ### Phase 5: responsiveness
 - Feed the Star Pointer screen coordinates directly. No IR or calibration model is
