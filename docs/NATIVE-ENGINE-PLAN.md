@@ -27,6 +27,7 @@ Good Egg 9.1 ms. Lower render scales did not help; resolution is not the limit.
 | Item | Result |
 | --- | --- |
 | Touch controls | Floating stick, A/B/X (Spin)/Y (C)/Z, +/-, 1/2, Home; the Star Pointer follows the finger exactly, with no IR calibration. On phones the buttons and pills stand in the pillarbox bars, clear of the HUD and the notch. The whole gameplay script passed through synthetic touches on both devices, with the same movement distances as the keyboard. Real-finger feel is untested. |
+| Touch camera | With MacioGalaxy's Odyssey camera mod on, two fingers on open screen orbit and pinch to zoom; one finger stays the Star Pointer. The camera test through touch gives the same camera trace as the mouse on the Mac and on the iPhone (zoom 2400 to 1500, elevation 70 to 55 degrees after the drag). |
 | Saves | A touch-created save reloaded in a new process on the iPhone; loading left the save hash unchanged. |
 | Audio | 92 one-second reports on the iPhone, 0 underruns. Not judged by ear. |
 | Shaders | One-time preparation on the first launch (progress screen, tap to skip): 166 s cold on iPhone 14, 148 s on iPad Pro, 38 s with a warm system cache. It fills the system Metal cache, so later launches start at once. Without it, background compiles kept iPhone draw waits near 14 ms for minutes. |
