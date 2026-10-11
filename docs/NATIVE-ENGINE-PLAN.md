@@ -26,14 +26,16 @@ Good Egg 9.1 ms. Lower render scales did not help; resolution is not the limit.
 
 | Item | Result |
 | --- | --- |
-| Touch controls | Floating stick, A/B/X (Spin)/Y (C)/Z, +/-, 1/2, Home; the Star Pointer follows the finger exactly, with no IR calibration. The whole gameplay script passed through synthetic touches on both devices, with the same movement distances as the keyboard. Real-finger feel is untested. |
+| Touch controls | Floating stick, A/B/X (Spin)/Y (C)/Z, +/-, 1/2, Home; the Star Pointer follows the finger exactly, with no IR calibration. On phones the buttons and pills stand in the pillarbox bars, clear of the HUD and the notch. The whole gameplay script passed through synthetic touches on both devices, with the same movement distances as the keyboard. Real-finger feel is untested. |
 | Saves | A touch-created save reloaded in a new process on the iPhone; loading left the save hash unchanged. |
 | Audio | 92 one-second reports on the iPhone, 0 underruns. Not judged by ear. |
 | Shaders | One-time preparation on the first launch (progress screen, tap to skip): 166 s cold on iPhone 14, 148 s on iPad Pro, 38 s with a warm system cache. It fills the system Metal cache, so later launches start at once. Without it, background compiles kept iPhone draw waits near 14 ms for minutes. |
 | Aspect | New users get the game's own 4:3 mode on 4:3 screens (iPad, full screen) and 16:9 on phones. |
 | Rides | Star Ball and Ray mechanic checks give the same results by touch and keyboard; both fail the same way upstream (tilt-back threshold; Ray approach route), so rides need a human run. |
 | Movies | Not needed on these routes; installed on the iPhone (all) and the iPad (prologue only, for storage). |
-| GalaxyPad save | The iPhone's GalaxyPad save (121 stars on file 1, Mario and Luigi) is the Wii big-endian form of the same layout; migration needs a per-chunk byte-order converter (Phase 3). |
+| Input latency | MacioGalaxy's probe, iPad Pro, 50 automated A presses in Good Egg: 47.1 ms press-to-present median in the Wii frame order (the response is shown two frames after the read). Running update and animation before drawing in the same frame (`PETARI_LOW_LATENCY`, now the iOS default) gives 28.6 ms (one frame); the gameplay checks pass with identical movement values. |
+| Save migration | GalaxyPad's save is the Wii big-endian form of the same layout. `wii_save_to_native.py` converts it, with field widths from the game's serializers. The iPhone's 121-star GalaxyPad save passes MacioGalaxy's native checker with identical values and loads into the restored Observatory on the Mac, the iPad and the iPhone (121 stars, 2,324 Star Bits, Luigi); it is installed in both test apps' normal save folders. |
+| Stage sweep | All 47 stages, scenario 1, through the touch layer on the iPhone: 45 pass. EpilogueDemoStage is a cutscene with no player. In FishTunnelGalaxy Mario dies in the scripted idle after the checks; it passes on the Mac and on the iPad at 16:9 and fails on the iPad at 4:3, so the camera and aspect change the scripted route. Worst two-minute gameplay p99 20.9 ms (OceanPhantomCave); largest single frame 33 ms. |
 
 120 FPS was scoped but not built. BlueWake's Smooth Motion lives in RecompCore's
 Aurora fork and is keyed to RecompCore's draw plans. Petari's frame loop draws
