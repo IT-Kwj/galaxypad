@@ -7,6 +7,44 @@ natively from the Petari decompilation. It also sets out how to build 120 FPS
 presentation, lower input latency and a mod layer on top. Nothing here has
 shipped. The current app, its maintained forks and private build 7202 are unchanged.
 
+## Overnight 11-12 October: native build plays on iPhone 14 and iPad Pro
+
+A separate test app, `org.galaxypad.native-probe` (Galaxy Native), now launches
+from the Home Screen on both devices and plays with touch controls. GalaxyPad,
+its forks, its saves and build 7202 were not touched. Changes are on the local
+MacioGalaxy branch `galaxypad/ios-native` in the private workspace (not pushed).
+
+**iPhone 14, iOS 26.6.2, go/no-go (Phase 1 gate): passed.** Restored Comet
+Observatory, 120-star save, warm shaders, 10 minutes: 35,949 gameplay frames, one
+over 20 ms (in the first two minutes), p99 17.04-17.11 ms in every two-minute
+segment, game logic about 2 ms a frame, thermal state serious from minute 3 to 10.
+Build 7202 on the same phone: 33-38 FPS and about 0.6x game speed in that area.
+
+With every shader prepared, the Observatory route on the iPhone leaves real
+headroom (median idle per 16.7 ms frame): Observatory 7.2 ms, Terrace 11.5 ms,
+Good Egg 9.1 ms. Lower render scales did not help; resolution is not the limit.
+
+| Item | Result |
+| --- | --- |
+| Touch controls | Floating stick, A/B/X (Spin)/Y (C)/Z, +/-, 1/2, Home; the Star Pointer follows the finger exactly, with no IR calibration. The whole gameplay script passed through synthetic touches on both devices, with the same movement distances as the keyboard. Real-finger feel is untested. |
+| Saves | A touch-created save reloaded in a new process on the iPhone; loading left the save hash unchanged. |
+| Audio | 92 one-second reports on the iPhone, 0 underruns. Not judged by ear. |
+| Shaders | One-time preparation on the first launch (progress screen, tap to skip): 166 s cold on iPhone 14, 148 s on iPad Pro, 38 s with a warm system cache. It fills the system Metal cache, so later launches start at once. Without it, background compiles kept iPhone draw waits near 14 ms for minutes. |
+| Aspect | New users get the game's own 4:3 mode on 4:3 screens (iPad, full screen) and 16:9 on phones. |
+| Rides | Star Ball and Ray mechanic checks give the same results by touch and keyboard; both fail the same way upstream (tilt-back threshold; Ray approach route), so rides need a human run. |
+| Movies | Not needed on these routes; installed on the iPhone (all) and the iPad (prologue only, for storage). |
+| GalaxyPad save | The iPhone's GalaxyPad save (121 stars on file 1, Mario and Luigi) is the Wii big-endian form of the same layout; migration needs a per-chunk byte-order converter (Phase 3). |
+
+120 FPS was scoped but not built. BlueWake's Smooth Motion lives in RecompCore's
+Aurora fork and is keyed to RecompCore's draw plans. Petari's frame loop draws
+state computed in `calcAnim` (`calcViewAndEntry` bakes the camera into J3D draw
+matrices), so model-keyed matrix interpolation is clean in principle, but a
+second presented frame per game step has to be made below the Wii XFB and
+retrace framework, at the Aurora command level. Next step: port the blend core
+onto upstream Aurora's per-draw uniforms, re-encode the finished frame, and
+measure on the ProMotion iPad.
+
+
 ## Why now
 
 On 28 September the Super Mario Galaxy decompilation
@@ -164,19 +202,19 @@ style of the September 26 handoff.
 Build, smoke tests and Mac timing above.
 
 ### Phase 1: iOS bring-up
-Done on iPad Pro: iOS build, signed test app, automated Observatory, Terrace and
-Good Egg run, restored Observatory timing. Remaining: touch mapped onto the
-native WPAD layer, saves persisting across relaunch, audio checked by ear, data
-from GalaxyPad's importer, and the iPhone 14.
+Done on iPad Pro and iPhone 14: iOS build, signed test app, automated routes,
+touch controls, save reload, audio counters, first-launch shader preparation and
+Home Screen launch. Remaining: real-finger play, audio by ear, and data from
+GalaxyPad's importer.
 
-**Gate:** the same automated runs on the iPhone 14, then a matched comparison
-against build 7202 in the restored Observatory: FPS, game-thread time and
-thermal state over 10 minutes on a hot phone. This is the go/no-go point.
+**Gate passed (12 October):** 10 minutes in the restored Observatory on a hot
+iPhone 14 held 60 FPS (see the overnight section above).
 
 ### Phase 2: mobile frame budget
-A transferable Metal pipeline cache for iOS and correct compile-worker sizing
-(the cold iPad run's main cost), then the display-list cache and draw batching
-GalaxyQuest measured, then attribution of any remaining spikes.
+First-launch preparation is in place (166 s on a cold iPhone 14). Remaining: the
+1.5 s stage-start shader gate on each launch (pipelines are recreated from the
+system cache; a Dawn pipeline blob cache would remove it), then the display-list
+cache and draw batching GalaxyQuest measured, which matter for the 120 FPS budget.
 
 **Gate:** hot iPhone 14, restored Observatory, 10 minutes: p99 interval at most
 18 ms, no audio underruns.
