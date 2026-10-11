@@ -58,3 +58,6 @@ Before resuming performance work, read
 [STATUS](docs/STATUS.md). They distinguish the latest private phone build, public
 release, owner feedback, rejected experiments and unresolved architectural work.
 Do not treat historical plans or component benchmarks as current gameplay gains.
+For the native decompilation backend, read the
+[native engine plan](docs/NATIVE-ENGINE-PLAN.md); its device numbers come from a
+separate test app, not from GalaxyPad.
