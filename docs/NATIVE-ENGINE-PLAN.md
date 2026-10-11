@@ -54,15 +54,15 @@ nothing on screens under 110 Hz.
 | iPhone 14 (60 Hz) with the mod on | Stays off; stage route PASS at 60 |
 | Native test suite | 90 of 90 pass |
 
-The limit is the cost of a full draw. Without a budget, the restored
-Observatory ran at 56 game steps a second (93% speed, thermal state nominal):
-each step needed about 18 ms for two draws. Smooth Motion now draws an in-between
-frame only while the step with it fits in about 16 ms. Heavier views fall back to
-60 FPS at full speed. On the iPad most of the Observatory, the Terrace and Good
-Egg fit; parts of Good Egg do not. Making every view fit means cutting GX command
-processing (about 7-8 ms a draw there), the same Phase 2 work that gives the
-iPhone more headroom. Not yet judged by eye on the device; particles and the HUD
-still move at 60.
+The first limit was GPU fill at the iPad's full 2732x2048. Without a budget the
+restored Observatory ran at 56 game steps a second (93% speed; thermal state
+nominal). Two frames a step there cost 21 ms at full resolution, 14 ms at 3x the
+Wii framebuffer (1920x1440) and 12.4 ms at 2x. Smooth Motion now renders at 3x
+while it is on, and draws an in-between frame only while the step with it fits
+in about 16 ms, so heavier views fall back to 60 FPS at full speed. At 3x the
+Observatory, the Terrace and Good Egg hold 120.1 presents a second at 60.0 game
+steps a second. Not yet judged by eye on the device; particles and the HUD still
+move at 60. Smooth Motion is on in the iPad test app's settings (Home → Mods).
 
 
 ## Why now
