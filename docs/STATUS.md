@@ -8,13 +8,15 @@ as a separate Home Screen app (Galaxy Native) with touch controls. On a hot iPho
 in 35,949), against 33-38 FPS for build 7202. Details and remaining work are in the
 [native engine plan](NATIVE-ENGINE-PLAN.md).
 
+**Next:** the [engine switch plan](ENGINE-SWITCH-PLAN.md) adds an Engine setting
+to GalaxyPad (Original or New) in two milestones. GalaxyPad itself has not
+changed yet.
+
 Read the [native engine plan](NATIVE-ENGINE-PLAN.md) before more compiler work.
 The Petari decompilation is complete and has a USA configuration. An independent
-native port (MacioGalaxy, CC0, Metal through Aurora) built on the Mac and, with
-small local changes, on iPad Pro, where the restored Comet Observatory held 60 FPS
-with no frame over 20 ms and the game thread idle for more than half of each
-frame. This was a separate test app; GalaxyPad, its forks, build 7202 and the
-iPhone are unchanged, and the iPhone 14 has not been measured yet.
+native port (MacioGalaxy, CC0, Metal through Aurora), with our iOS changes, plays
+on the iPhone 14 and iPad Pro as a separate test app; GalaxyPad, its forks and
+build 7202 are unchanged.
 
 ## September 26 iPhone session (compiler handoff)
 

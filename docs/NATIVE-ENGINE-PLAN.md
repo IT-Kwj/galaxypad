@@ -244,6 +244,9 @@ cache and draw batching GalaxyQuest measured, which matter for the 120 FPS budge
 18 ms, no audio underruns.
 
 ### Phase 3: GalaxyPad integration
+The step-by-step plan is the [engine switch plan](ENGINE-SWITCH-PLAN.md): an
+Engine setting in GalaxyPad (Original or New), built in two milestones.
+
 Native backend inside the GalaxyPad app; settings, Game Mode metadata and
 diagnostics carried over. Save migration from the current Wii-format NAND to the
 native save format, through the game's own load and save code, with a byte-exact
@@ -336,6 +339,7 @@ commits; SDK; flags; artifact hashes).
 1. Base the fork on MacioGalaxy, or assemble Petari, Aurora and our own platform
    layer while borrowing its pieces. Recommendation: fork MacioGalaxy; it already
    passes the smoke tests on our exact disc.
-2. Whether the current backend stays the default build until Phase 3 passes.
-   Recommendation: yes.
-3. Whether mods ship enabled in the app or only through a developer menu at first.
+2. Whether mods ship enabled in the app or only through a developer menu at first.
+
+The integration decisions (public fork, default engine, saves, installing over
+GalaxyPad) are in the [engine switch plan](ENGINE-SWITCH-PLAN.md#decisions-for-the-owner).

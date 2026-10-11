@@ -60,4 +60,5 @@ release, owner feedback, rejected experiments and unresolved architectural work.
 Do not treat historical plans or component benchmarks as current gameplay gains.
 For the native decompilation backend, read the
 [native engine plan](docs/NATIVE-ENGINE-PLAN.md); its device numbers come from a
-separate test app, not from GalaxyPad.
+separate test app, not from GalaxyPad. Work on the Engine setting follows the
+[engine switch plan](docs/ENGINE-SWITCH-PLAN.md); record results in its progress log.
