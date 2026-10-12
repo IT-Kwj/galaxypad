@@ -153,7 +153,43 @@ Approved by the owner on 12 October 2026 ("proceed with this plan"):
   Found on the way: this Mac's Homebrew minizip-ng was picked up by the core's
   `USE_SYSTEM_LIBS=AUTO` (a local rebuild used an empty pkg-config path), and
   Homebrew libpng by the engine's pkg-config lookup (the build script turns it off).
-  **Before step 8:** the private build artifacts for the installed build 7202 (its
-  tuned game module) are no longer on this Mac. A Milestone 1 build needs a newly
-  generated, unprofiled Original-engine module, and installing it over GalaxyPad
-  would replace 7202 permanently; the owner decides that before any install.
+  The private build artifacts for the installed build 7202 (its game module) are
+  no longer on this Mac, so Milestone 1 builds use a freshly generated
+  Original-engine module. 7202's module experiments (loop promotion and a faster
+  chunk lookup) measured no frame-rate change ([September 26
+  handoff](IPHONE-PERFORMANCE-2026-09-26.md)), and its touch calibration is in
+  source, so replacing it under the approved backup rules loses nothing measured.
+- **12 October 2026:** steps 5 and 6, and the first iPhone install.
+  Disc (step 5): the iPhone's GalaxyPad holds the game as `RMGE01.wbfs` plus an
+  extracted folder with only `sys/` and the two files the import verifies; the
+  Original engine reads the image. The New engine reads every file, and a missing
+  movie stops it (`MoviePlayerSimple::startMovie` panics), so all 3.2 GB are
+  needed. Choosing New in the Engine menu now adds the missing files from the
+  installed image first (same checked export as the import; each file written
+  under a temporary name, free space checked first), with progress and Cancel, and
+  writes a marker; new imports write it too. The launch path requires the marker.
+  Storage (Milestone 2): both engines' data is image plus folder, about 6.7 GB.
+  Saves (step 6): GalaxyPad passes the Original Wii save to the engine
+  (`--import-wii-save`, `galaxypad-engine` `e35d9ac3`), which copies it once into
+  `GalaxyPad/NewEngine` when that has no save, keeps a checked backup and only
+  reads the Wii file. Byte-identical to the research converter on the real
+  121-star save.
+  CI: `ios-build` now uses Xcode 26.3 (Xcode 16.4's libc++ has no
+  `std::jthread`), and `galaxypad-engine` `38045bc4` uses the host `strtoul`
+  declaration that the iOS 26.2 SDK requires. The engine's Home menu tests cover the
+  "Original engine..." item (absent outside GalaxyPad, asks first, Cancel changes
+  nothing, Switch saves once and closes like Quit).
+  iPhone 14 (build 7212, `org.galaxypad.GalaxyPad`, same signing
+  identity): 61 save, setting and preference files backed up and read back
+  identically, then unchanged byte for byte after installing 7210, 7211 and 7212. To
+  make room (2.5 GB free), the Galaxy Native test app's game copy (3.4 GB, the
+  same 2,375 files as the research copy on the Mac) was removed; its save in
+  `Library/Application Support/Petari` was kept. A Mac launching the app with
+  `GALAXYPAD_TEST_SELECT_NEW_ENGINE=1` runs the Engine menu's New choice without
+  touch, and `GALAXYPAD_TEST_ENGINE_ARGS=1` passes its launch arguments to the
+  engine (a test `--user` and fixture), for device tests.
+  Not done on 12 October so far: launch and play on the iPhone (it was locked), the
+  iPad (unavailable).
+  Not in Milestone 1: `CADisableMinimumFrameDurationOnPhone`, which iPhones with
+  ProMotion need for 120 Hz; the Original engine's display link sets no rate, so
+  adding it needs its own check.
