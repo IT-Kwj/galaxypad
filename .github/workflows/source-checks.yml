@@ -40,6 +40,10 @@ jobs:
           persist-credentials: false
       - name: Install build dependencies
         run: brew install cmake ninja ripgrep
+      # The New engine (ref/galaxypad-engine) needs C++20 std::jthread, which
+      # Xcode 16's iOS libc++ does not provide. An explicit version, not "latest".
+      - name: Select Xcode 26.3
+        run: sudo xcode-select -s /Applications/Xcode_26.3.app
       - name: Record toolchain
         run: |
           xcodebuild -version
