@@ -270,3 +270,6 @@ Approved by the owner on 12 October 2026 ("proceed with this plan"):
   Original engine after the round trip (iPhone 18 Pro Simulator, Simulator input):
   title, file select showing the copied 121-star file, Play This File, the Comet
   Observatory, and the player runs forward; the Wii save is unchanged afterwards.
+  iPad Air Simulator, after switching back with real taps: the Original engine
+  loads the save that came back from the New engine (file 1, 0 stars) and plays
+  its prologue.

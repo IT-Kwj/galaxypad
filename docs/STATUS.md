@@ -1,5 +1,19 @@
 # GalaxyPad status
 
+## October 12: the Engine setting is in GalaxyPad (current)
+
+GalaxyPad now holds both engines: Original (the current one) and New (the native
+engine from `chrissotraidis/galaxypad-engine`). The Engine setting applies when
+GalaxyPad is opened again; Original stays the default. Choosing New first adds
+any game files an older install lacks, and saves follow the player both ways.
+In the iPad and iPhone Simulators, the switch works in both directions, the New
+engine passes the galaxy route by touch, and the Original engine still plays.
+The app is 59 MB before the game module (the New engine's shader seeds ship as a
+small pack). Not yet done: testing on the owner's iPhone and iPad (private build
+7212 with the first version is on the iPhone), the owner's playtest, and a
+release. Results and remaining Milestone 2 work are in the
+[engine switch plan](ENGINE-SWITCH-PLAN.md).
+
 ## October 11 native engine research (current direction)
 
 **12 October overnight:** the native build now plays on the iPhone 14 and iPad Pro
@@ -8,9 +22,8 @@ as a separate Home Screen app (Galaxy Native) with touch controls. On a hot iPho
 in 35,949), against 33-38 FPS for build 7202. Details and remaining work are in the
 [native engine plan](NATIVE-ENGINE-PLAN.md).
 
-**Next:** the [engine switch plan](ENGINE-SWITCH-PLAN.md) adds an Engine setting
-to GalaxyPad (Original or New) in two milestones. GalaxyPad itself has not
-changed yet.
+**Next (done 12 October, above):** the [engine switch plan](ENGINE-SWITCH-PLAN.md)
+adds an Engine setting to GalaxyPad (Original or New) in two milestones.
 
 Read the [native engine plan](NATIVE-ENGINE-PLAN.md) before more compiler work.
 The Petari decompilation is complete and has a USA configuration. An independent
