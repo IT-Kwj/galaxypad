@@ -17,6 +17,8 @@
 - (void)gameOverlayRequestsDevelopmentCheckpointRestore:(GalaxyPadGameOverlay *)overlay;
 // Prepares what the New engine needs, then selects it; completion reports whether it did.
 - (void)gameOverlayRequestsNewEngine:(GalaxyPadGameOverlay *)overlay completion:(void (^)(BOOL selected))completion;
+// Over the New engine: switches back to the Original engine (the game closes).
+- (void)gameOverlayRequestsOriginalEngine:(GalaxyPadGameOverlay *)overlay;
 @required
 - (void)gameOverlayRequestsProblemReport:(GalaxyPadGameOverlay *)overlay;
 @end
@@ -34,6 +36,9 @@
 @property(nonatomic, readonly) BOOL blocksGameplay;
 @property(nonatomic, readonly) BOOL nativeMenuVisible;
 @property(nonatomic) BOOL gameplayAvailable;
+// Over the New engine (GalaxyPadNewEngineHost): the menu lists only what works
+// there, without the Original engine's display, audio, game-data and stop items.
+@property(nonatomic) BOOL hostedByNewEngine;
 - (void)setTouchControlsHidden:(BOOL)hidden animated:(BOOL)animated;
 - (void)refreshControllerVisibility;
 - (void)presentNativePause;

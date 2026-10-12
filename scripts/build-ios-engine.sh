@@ -24,9 +24,12 @@ cmake --build "$build" --target GalaxyPadEngine --parallel "${GALAXYPAD_BUILD_JO
 # Building must not change the pinned engine checkout.
 python3 "$root/scripts/dependency-lock.py"
 framework="$build/native/app/GalaxyPadEngine.framework"
-exported="$(nm -gU "$framework/GalaxyPadEngine" | awk '{print $3}')"
-if [[ "$exported" != "_galaxypad_engine_main" ]]; then
-  echo "GalaxyPadEngine must export only _galaxypad_engine_main; found:" >&2
+# The entry point and the functions GalaxyPad's controls and menu call
+# (apple/ios/GalaxyPadNewEngineHost.mm); nothing else.
+exported="$(nm -gU "$framework/GalaxyPadEngine" | awk '{print $3}' | sort | tr '\n' ' ')"
+expected="_galaxypad_engine_image _galaxypad_engine_input _galaxypad_engine_main _galaxypad_engine_started _galaxypad_engine_switch_to_original "
+if [[ "$exported" != "$expected" ]]; then
+  echo "GalaxyPadEngine must export only: $expected; found:" >&2
   echo "$exported" >&2
   exit 1
 fi

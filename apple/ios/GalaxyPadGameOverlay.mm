@@ -561,6 +561,14 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
         }],
         gyroMenu, rideMenu, touchAction, tiltAction, tiltResponse, auxiliaryAction,
     ]];
+    if (_hostedByNewEngine) {
+        // The New engine reads controllers itself and steers balls and rays from
+        // the stick, so controller mapping and stick modes belong to the Original.
+        NSMutableArray<UIMenuElement *> *controls = [controlsMenu.children mutableCopy];
+        [controls removeObject:rideMenu];
+        [controls removeObjectAtIndex:0];
+        controlsMenu = [controlsMenu menuByReplacingChildren:controls];
+    }
 
     // These host adapters are not delivered yet. Do not present inert actions
     // as working, or accidentally route Galaxy reports/data to SunPad.
@@ -583,9 +591,10 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
     NSMutableArray<UIMenuElement *> *dataItems = [dataMenu.children mutableCopy];
     [dataItems insertObject:dataStatus atIndex:0];
     dataMenu = [dataMenu menuByReplacingChildren:dataItems];
-    ((UIAction *)controlsMenu.children.firstObject).attributes =
-      [self.delegate respondsToSelector:@selector(gameOverlayRequestsControllerMapping:)]
-        ? 0 : UIMenuElementAttributesDisabled;
+    if (!_hostedByNewEngine)
+      ((UIAction *)controlsMenu.children.firstObject).attributes =
+        [self.delegate respondsToSelector:@selector(gameOverlayRequestsControllerMapping:)]
+          ? 0 : UIMenuElementAttributesDisabled;
     reportProblemAction.attributes = self.delegate ? 0 : UIMenuElementAttributesDisabled;
     UIAction *shareLog=[UIAction actionWithTitle:@"Share Diagnostic Log"
       image:[UIImage systemImageNamed:@"square.and.arrow.up"] identifier:nil
@@ -623,6 +632,8 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
         about,
         stopAction,
     ] mutableCopy];
+    if (_hostedByNewEngine)
+        menuItems = [@[controlsMenu, reportProblemAction, about] mutableCopy];
 #if GALAXYPAD_NEW_ENGINE
     // docs/ENGINE-SWITCH-PLAN.md: the engine runs the whole app, so the choice
     // applies when GalaxyPad is opened again.
@@ -727,6 +738,11 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
             [overlay.delegate gameOverlayRequestsNewEngine:overlay completion:chosen];
             return;
         }
+        if (engine == GalaxyPadEngineOriginal &&
+            [overlay.delegate respondsToSelector:@selector(gameOverlayRequestsOriginalEngine:)]) {
+            [overlay.delegate gameOverlayRequestsOriginalEngine:overlay];
+            return;
+        }
         [GalaxyPadSettings sharedSettings].engine = engine;
         [[GalaxyPadSettings sharedSettings] synchronize];
         chosen(YES);
@@ -744,6 +760,11 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
 
 - (void)refreshMenuButton {
     _menuButton.menu = [self buildMenu];
+}
+
+- (void)setHostedByNewEngine:(BOOL)hosted {
+    _hostedByNewEngine = hosted;
+    [self refreshMenuButton];
 }
 
 - (void)confirmGameDataRemoval {

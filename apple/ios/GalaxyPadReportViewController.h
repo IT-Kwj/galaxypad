@@ -7,4 +7,7 @@
                       technicalContext:(NSString *)context;
 // Existing local diagnostic-log review entry point.
 - (instancetype)initWithReportURL:(NSURL *)url;
+// "Report a Problem": three short questions, then the GitHub draft review.
+// context is read when the user continues.
++ (void)presentReportPromptFrom:(UIViewController *)presenter technicalContext:(NSString *(^)(void))context;
 @end

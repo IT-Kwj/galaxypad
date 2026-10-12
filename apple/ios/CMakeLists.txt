@@ -92,6 +92,7 @@ if(GALAXYPAD_NEW_ENGINE)
     message(FATAL_ERROR "Run scripts/build-ios-engine.sh first (or configure with -DGALAXYPAD_NEW_ENGINE=OFF)")
   endif()
   target_compile_definitions(GalaxyPad PRIVATE GALAXYPAD_NEW_ENGINE=1)
+  target_sources(GalaxyPad PRIVATE GalaxyPadNewEngineHost.mm)
   target_link_libraries(GalaxyPad PRIVATE "${ENGINE_FRAMEWORK}")
   # Load it from the app bundle only; no build-machine path in the executable.
   set_target_properties(GalaxyPad PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE

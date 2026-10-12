@@ -18,6 +18,41 @@
   if ((self = [super init])) _reportURL = url;
   return self;
 }
++ (void)presentReportPromptFrom:(UIViewController *)presenter technicalContext:(NSString *(^)(void))context {
+  // Review a GitHub draft before opening the issue tracker; logs are optional.
+  UIAlertController *prompt = [UIAlertController alertControllerWithTitle:@"Report a Problem"
+    message:@"Describe the problem without private information. Review a GitHub issue draft with app status, then optionally prepare a diagnostic log to attach. Nothing is submitted automatically."
+    preferredStyle:UIAlertControllerStyleAlert];
+  for (NSString *placeholder in @[@"What went wrong?", @"Area and what you were doing (optional)",
+                                  @"Every time, sometimes, once, or unsure?"]) {
+    [prompt addTextFieldWithConfigurationHandler:^(UITextField *field) {
+      field.placeholder = placeholder;
+      field.clearButtonMode = UITextFieldViewModeWhileEditing;
+    }];
+  }
+  [prompt addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+  __weak UIViewController *weakPresenter = presenter;
+  __weak UIAlertController *weakPrompt = prompt;
+  NSString *(^technicalContext)(void) = [context copy];
+  [prompt addAction:[UIAlertAction actionWithTitle:@"Review GitHub Report" style:UIAlertActionStyleDefault
+    handler:^(UIAlertAction *action) {
+      (void)action;
+      UIViewController *view = weakPresenter;
+      UIAlertController *questions = weakPrompt;
+      if (!view || questions.textFields.count != 3) return;
+      NSDictionary *answers = @{@"problem": questions.textFields[0].text ?: @"",
+        @"context": questions.textFields[1].text ?: @"", @"frequency": questions.textFields[2].text ?: @""};
+      NSString *status = technicalContext();
+      // Explicit dismissal completion avoids presenting underneath the alert.
+      [view dismissViewControllerAnimated:YES completion:^{
+        GalaxyPadReportViewController *report = [[GalaxyPadReportViewController alloc]
+          initWithReporterAnswers:answers technicalContext:status];
+        UINavigationController *navigation = [[UINavigationController alloc] initWithRootViewController:report];
+        [view presentViewController:navigation animated:YES completion:nil];
+      }];
+    }]];
+  [presenter presentViewController:prompt animated:YES completion:nil];
+}
 - (instancetype)initWithReporterAnswers:(NSDictionary<NSString *, NSString *> *)answers
                       technicalContext:(NSString *)context {
   if ((self = [super init])) {
