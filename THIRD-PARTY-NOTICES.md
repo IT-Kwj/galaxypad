@@ -15,12 +15,14 @@ Original project names, author histories, licenses and per-file notices remain
 attached to that work. Optional experiments do not change the normal source graph.
 
 The New engine (`ref/galaxypad-engine`, from MacioGalaxy and the Petari
-decompilation, both CC0) is pinned the same way. iOS device builds embed it as
-`GalaxyPadEngine.framework`, which bundles Aurora (MIT), Dawn (BSD-3-Clause),
-SDL (zlib), Dear ImGui (MIT), abseil (Apache-2.0), fmt (MIT), xxHash (BSD-2-Clause),
-zstd (BSD-3-Clause) and libpng (libpng license). Their license texts must be listed
-here and shipped with the app before any release that includes it (engine switch
-plan, Milestone 2).
+decompilation, both CC0) is pinned the same way. The app embeds it as
+`GalaxyPadEngine.framework`, which links Aurora (MIT), Dawn (BSD-3-Clause), abseil
+(Apache-2.0), SDL (zlib), Dear ImGui (MIT), fmt (MIT), FreeType (FreeType License),
+libpng (libpng license), Tracy (BSD-3-Clause), xxHash (BSD-2-Clause) and zstd
+(BSD-3-Clause), plus the system's SQLite, zlib and bzip2. The license text of each
+ships inside the app, in `GalaxyPadEngine.framework/Licenses`; the engine's build
+copies them from the fetched sources and stops if one is missing. Portions of this
+software are copyright © The FreeType Project (www.freetype.org). All rights reserved.
 
 The historical Preview 1 packages include PreviewNotices with original license texts from the runtime
 and its bundled third-party dependencies. The release source supplement contains

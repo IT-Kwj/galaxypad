@@ -240,3 +240,19 @@ Approved by the owner on 12 October 2026 ("proceed with this plan"):
     copied it out (converted back by the script: identical), kept the replaced
     Wii save (`cd8d1fa9`), and the Original engine's file select shows it.
   - GalaxyPad's three-dot menu, Engine, New (real taps): selected, with the note.
+  iPhone 18 Pro Simulator, iOS 27.0, same build and data:
+  - Original engine: title screen at 59 FPS.
+  - Engine menu, New (test switch, after the first frame): 3.2 GB of files
+    added, the game kept the full screen, and the note faded.
+  - New engine: save copied in (`7e394e41`, as on the iPad), shader preparation,
+    and the galaxy route by touch passed unattended. A first run passed its
+    checks but was marked ASSISTED: four presses of the Mac's Command key reached
+    the Simulator during it.
+  - Home menu, Original engine..., Switch (real taps): setting back to Original,
+    the Original engine starts at 59 FPS, Wii save unchanged (`cd8d1fa9`).
+  Licenses (Milestone 2 release requirement): `GalaxyPadEngine.framework` now ships
+  the license text of everything it links in its `Licenses` folder (`galaxypad-engine`
+  `404ada13`), copied from the fetched sources; both app builds carry all twelve.
+  `THIRD-PARTY-NOTICES.md` lists them and points there.
+  For the owner's playtest: the New engine's Home menu follows the Wii, where a
+  tap points at an item and A chooses it; a tap does not choose it directly.
