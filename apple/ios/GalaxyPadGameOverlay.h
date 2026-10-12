@@ -15,6 +15,8 @@
 - (void)gameOverlayRequestsAbout:(GalaxyPadGameOverlay *)overlay;
 - (void)gameOverlayRequestsDevelopmentCheckpoint:(GalaxyPadGameOverlay *)overlay;
 - (void)gameOverlayRequestsDevelopmentCheckpointRestore:(GalaxyPadGameOverlay *)overlay;
+// Prepares what the New engine needs, then selects it; completion reports whether it did.
+- (void)gameOverlayRequestsNewEngine:(GalaxyPadGameOverlay *)overlay completion:(void (^)(BOOL selected))completion;
 @required
 - (void)gameOverlayRequestsProblemReport:(GalaxyPadGameOverlay *)overlay;
 @end

@@ -62,6 +62,75 @@ static bool ExportChecked(const DiscIO::Volume& volume, const DiscIO::Partition&
   return true;
 }
 
+// The supported disc's game partition and file system, or a message for the player.
+static NSString *OpenSupportedPartition(const fs::path& image, std::unique_ptr<DiscIO::Volume>& volume,
+    DiscIO::Partition& partition, const DiscIO::FileSystem*& filesystem) {
+  volume=DiscIO::CreateVolume(image.string());
+  if (!volume || volume->GetVolumeType()!=DiscIO::Platform::WiiDisc ||
+      volume->GetGameID()!="RMGE01" || volume->GetRevision()!=0 || volume->GetDiscNumber()!=0)
+    return @"Expected a supported RMGE01 revision 0 Wii disc.";
+  partition=volume->GetGamePartition();
+  if (volume->GetGameID(partition)!="RMGE01" || volume->GetRevision(partition)!=0 ||
+      volume->GetDiscNumber(partition)!=0)
+    return @"The game partition is not RMGE01 revision 0.";
+  // Bound variable-size system exports before allowing DiscIO to write.
+  auto dolOffset=DiscIO::GetBootDOLOffset(*volume,partition);
+  auto dolSize=dolOffset ? DiscIO::GetBootDOLSize(*volume,partition,*dolOffset) : std::nullopt;
+  auto fstSize=DiscIO::GetFSTSize(*volume,partition);
+  auto apploaderSize=DiscIO::GetApploaderSize(*volume,partition);
+  if (!dolSize || *dolSize!=GalaxyPadDOLBytes || !fstSize || *fstSize>(16ULL<<20) ||
+      !apploaderSize || *apploaderSize>(16ULL<<20))
+    return @"Unsupported or damaged game system data.";
+  filesystem=volume->GetFileSystem(partition);
+  if (!filesystem || !filesystem->IsValid() || filesystem->GetRoot().GetTotalChildren()>10000)
+    return @"Game data is damaged or unsupported.";
+  return nil;
+}
+
+// Walks the disc's file table under target and counts the bytes of files that are
+// absent or the wrong size. With write set, exports each one under a temporary name
+// and renames it into place, so an interrupted run leaves only whole files.
+static bool CompleteChecked(const DiscIO::Volume& volume, const DiscIO::Partition& partition,
+    const DiscIO::FileInfo& directory, const fs::path& target, unsigned depth, bool write,
+    uint64_t& missingBytes, BOOL (^cancelled)(void), void (^exported)(uint64_t)) {
+  if (depth>128 || (cancelled && cancelled())) return false;
+  std::error_code error;
+  auto status=fs::symlink_status(target,error);
+  if (fs::is_symlink(status) || (fs::exists(status) && !fs::is_directory(status))) return false;
+  if (write && !fs::exists(status) && (!fs::create_directory(target,error) || error)) return false;
+  for (const auto& entry:directory) {
+    if (cancelled && cancelled()) return false;
+    std::string name=entry.GetName();
+    if (name.empty() || name=="." || name==".." || name.find('/')!=std::string::npos ||
+        name.find('\\')!=std::string::npos || name.find('\0')!=std::string::npos) return false;
+    auto path=target/name;
+    if (entry.IsDirectory()) {
+      if (!CompleteChecked(volume,partition,entry,path,depth+1,write,missingBytes,cancelled,exported)) return false;
+      continue;
+    }
+    auto fileStatus=fs::symlink_status(path,error);
+    if (fs::is_regular_file(fileStatus) && fs::file_size(path,error)==entry.GetSize() && !error) continue;
+    error.clear();
+    if (fs::exists(fileStatus) && !fs::is_regular_file(fileStatus)) return false;
+    missingBytes+=entry.GetSize();
+    if (!write) continue;
+    auto partial=path;
+    partial+=".partial";
+    fs::remove(partial,error);
+    if (error || !DiscIO::ExportFile(volume,partition,&entry,partial.string())) return false;
+    if (fs::file_size(partial,error)!=entry.GetSize() || error) return false;
+    fs::rename(partial,path,error);
+    if (error) return false;
+    if (exported) exported(entry.GetSize());
+  }
+  return true;
+}
+
+static bool WriteFilesCompleteMarker(const fs::path& root) {
+  std::ofstream marker(root/GalaxyPadFilesCompleteMarker,std::ios::binary|std::ios::trunc);
+  return marker && (marker<<"RMGE01\n") && (marker.close(),!marker.fail());
+}
+
 @implementation GalaxyPadDiscExtractor
 + (void)extractImageAtPath:(NSString *)imagePath toDirectory:(NSString *)destination
     progress:(void (^)(NSString*,double))progress completion:(void (^)(BOOL,NSString*))completion {
@@ -90,25 +159,10 @@ static bool ExportChecked(const DiscIO::Volume& volume, const DiscIO::Partition&
             dispatch_async(dispatch_get_main_queue(), ^{ notify(@"Verifying image identity",0); });
           }
           if (cancelled && cancelled()) return @"Import cancelled.";
-          auto volume=DiscIO::CreateVolume(image.string());
-          if (!volume || volume->GetVolumeType()!=DiscIO::Platform::WiiDisc ||
-              volume->GetGameID()!="RMGE01" || volume->GetRevision()!=0 || volume->GetDiscNumber()!=0)
-            return @"Expected a supported RMGE01 revision 0 Wii disc.";
-          auto partition=volume->GetGamePartition();
-          if (volume->GetGameID(partition)!="RMGE01" || volume->GetRevision(partition)!=0 ||
-              volume->GetDiscNumber(partition)!=0)
-            return @"The game partition is not RMGE01 revision 0.";
-          // Bound variable-size system exports before allowing DiscIO to write.
-          auto dolOffset=DiscIO::GetBootDOLOffset(*volume,partition);
-          auto dolSize=dolOffset ? DiscIO::GetBootDOLSize(*volume,partition,*dolOffset) : std::nullopt;
-          auto fstSize=DiscIO::GetFSTSize(*volume,partition);
-          auto apploaderSize=DiscIO::GetApploaderSize(*volume,partition);
-          if (!dolSize || *dolSize!=GalaxyPadDOLBytes || !fstSize || *fstSize>(16ULL<<20) ||
-              !apploaderSize || *apploaderSize>(16ULL<<20))
-            return @"Unsupported or damaged game system data.";
-          auto filesystem=volume->GetFileSystem(partition);
-          if (!filesystem || !filesystem->IsValid() || filesystem->GetRoot().GetTotalChildren()>10000)
-            return @"Game data is damaged or unsupported.";
+          std::unique_ptr<DiscIO::Volume> volume;
+          DiscIO::Partition partition;
+          const DiscIO::FileSystem* filesystem=nullptr;
+          if (NSString *unsupported=OpenSupportedPartition(image,volume,partition,filesystem)) return unsupported;
           if (!fs::create_directory(root,error) || error) return @"A new private extraction directory is required.";
           if (!DiscIO::ExportSystemData(*volume,partition,root.string())) return @"System-data extraction failed.";
           if (SHA256(root/"sys/main.dol",cancelled)!=GalaxyPadDOLSHA256) return @"Extracted DOL does not match the supported module identity.";
@@ -119,6 +173,7 @@ static bool ExportChecked(const DiscIO::Volume& volume, const DiscIO::Partition&
           if (SHA256(root/"files/ModuleData/HomeButtonMenuWrapperRSO.rso",cancelled)!=GalaxyPadRSOSHA256 ||
               SHA256(root/"files/ModuleData/product.sel",cancelled)!=GalaxyPadSymbolSHA256)
             return @"Home-menu executable data does not match the supported game revision.";
+          if (!WriteFilesCompleteMarker(root)) return @"Game-data extraction failed or was incomplete.";
           return nil;
         };
         failure=extract();
@@ -126,6 +181,64 @@ static bool ExportChecked(const DiscIO::Volume& volume, const DiscIO::Partition&
       dispatch_async(dispatch_get_main_queue(), ^{
         NSString *result=(cancelled && cancelled()) ? @"Import cancelled." : failure;
         if (!result && progress) progress(@"Extraction verified",1);
+        completion(result==nil,result);
+      });
+    }
+  });
+}
+
+// Every new import is complete; installs from older builds may hold only sys/
+// and the two verified files, which is all the Original engine reads.
++ (void)completeFilesForImageAtPath:(NSString *)imagePath directory:(NSString *)directory
+    cancelled:(BOOL (^)(void))cancelled
+    progress:(void (^)(double))progress completion:(void (^)(BOOL,NSString*))completion {
+  dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0), ^{
+    @autoreleasepool {
+      NSString *failure=nil;
+      try {
+        auto complete=[&]() -> NSString* {
+          fs::path image=imagePath.fileSystemRepresentation, root=directory.fileSystemRepresentation;
+          std::error_code error;
+          if (!fs::is_regular_file(image,error) || error || !fs::is_directory(root/"sys",error) || error)
+            return @"The installed game data was not found. Import the game first.";
+          std::unique_ptr<DiscIO::Volume> volume;
+          DiscIO::Partition partition;
+          const DiscIO::FileSystem* filesystem=nullptr;
+          if (NSString *unsupported=OpenSupportedPartition(image,volume,partition,filesystem)) return unsupported;
+          if (SHA256(root/"sys/main.dol",cancelled)!=GalaxyPadDOLSHA256)
+            return @"The installed game data does not match the supported revision.";
+          uint64_t missing=0;
+          if (!CompleteChecked(*volume,partition,filesystem->GetRoot(),root/"files",0,false,missing,cancelled,nil))
+            return @"The installed game files could not be checked.";
+          NSURL *rootURL=[NSURL fileURLWithPath:directory isDirectory:YES];
+          NSNumber *available=nil;
+          [rootURL getResourceValue:&available forKey:NSURLVolumeAvailableCapacityForImportantUsageKey error:nil];
+          if (missing>0 && available && available.unsignedLongLongValue<missing+(512ULL<<20))
+            return [NSString stringWithFormat:@"The New engine needs %.1f GB of free storage for game files.",
+              (double)(missing+(512ULL<<20))/1e9];
+          const uint64_t total=missing;
+          uint64_t pending=0;
+          __block uint64_t written=0;
+          void (^notify)(double)=[progress copy];
+          if (!CompleteChecked(*volume,partition,filesystem->GetRoot(),root/"files",0,true,pending,cancelled,
+                ^(uint64_t bytes) {
+                  written+=bytes;
+                  if (notify) {
+                    double fraction=total ? std::min(1.0,(double)written/(double)total) : 1.0;
+                    dispatch_async(dispatch_get_main_queue(), ^{ notify(fraction); });
+                  }
+                }))
+            return @"Game files could not be prepared. Nothing else was changed.";
+          if (SHA256(root/"files/ModuleData/HomeButtonMenuWrapperRSO.rso",cancelled)!=GalaxyPadRSOSHA256 ||
+              SHA256(root/"files/ModuleData/product.sel",cancelled)!=GalaxyPadSymbolSHA256)
+            return @"Home-menu executable data does not match the supported game revision.";
+          if (!WriteFilesCompleteMarker(root)) return @"Game files could not be prepared. Nothing else was changed.";
+          return nil;
+        };
+        failure=complete();
+      } catch (const std::exception&) { failure=@"Game files could not be prepared. Nothing else was changed."; }
+      dispatch_async(dispatch_get_main_queue(), ^{
+        NSString *result=(cancelled && cancelled()) ? @"Cancelled. Files prepared so far are kept." : failure;
         completion(result==nil,result);
       });
     }

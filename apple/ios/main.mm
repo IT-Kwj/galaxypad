@@ -11,6 +11,7 @@
 #import "GalaxyPadControllers.h"
 #import "GalaxyPadGyroPointer.h"
 #import "GalaxyPadImportTransaction.h"
+#import "GalaxyPadDiscExtractor.h"
 #include "../shared/GalaxyPadImportActivation.h"
 #include "../shared/GalaxyPadMovementTrace.h"
 #include "GalaxyPadDiscIdentity.h"
@@ -20,6 +21,8 @@
 #import <GameController/GCEventViewController.h>
 #import <TargetConditionals.h>
 #include <stdlib.h>
+#include <atomic>
+#include <memory>
 #include <float.h>
 #include <sys/resource.h>
 #include <mach/mach.h>
@@ -75,6 +78,7 @@ static double GalaxyPadResidentMiB(void) {
   UIAlertController *_importProgress;
   BOOL _activateImportAfterExit;
   BOOL _removingGameData;
+  BOOL _preparingEngine;
 #if TARGET_OS_SIMULATOR
   NSString *_simulatorInputPath;
   double _simulatorInputNotBefore;
@@ -418,6 +422,15 @@ static double GalaxyPadResidentMiB(void) {
   if (_attemptedStart) return;
   _attemptedStart = YES;
   [self startGame];
+#if GALAXYPAD_NEW_ENGINE
+  // Device testing from a Mac (devicectl launch --environment-variables) runs the
+  // Engine menu's New choice without touch. Players never set it.
+  const char *selectNew = getenv("GALAXYPAD_TEST_SELECT_NEW_ENGINE");
+  if (selectNew && strcmp(selectNew, "1") == 0)
+    [self gameOverlayRequestsNewEngine:_overlay completion:^(BOOL selected) {
+      GalaxyPadLog(@"engine test: New selected=%d", selected);
+    }];
+#endif
 }
 - (void)restartGame {
   if (_host.busy || _import || _removingGameData || self.presentedViewController) return;
@@ -575,7 +588,7 @@ static double GalaxyPadResidentMiB(void) {
 }
 - (void)gameOverlayRequestsGameDataChange:(GalaxyPadGameOverlay *)overlay {
   (void)overlay;
-  if (_import || _removingGameData) return;
+  if (_import || _removingGameData || _preparingEngine) return;
   UIAlertController *notice=[UIAlertController alertControllerWithTitle:@"Import Game Data"
     message:@"Select your supported RMGE01 revision 0 WBFS image. GalaxyPad makes and verifies a private copy. After verification, the current game stops before data is replaced. Saves are kept. Other image formats are not supported yet."
     preferredStyle:UIAlertControllerStyleAlert];
@@ -614,12 +627,51 @@ static double GalaxyPadResidentMiB(void) {
   [alert addAction:[UIAlertAction actionWithTitle:@"Done" style:UIAlertActionStyleCancel handler:nil]];
   [self presentViewController:alert animated:YES completion:nil];
 }
+- (void)gameOverlayRequestsNewEngine:(GalaxyPadGameOverlay *)overlay completion:(void (^)(BOOL))completion {
+  (void)overlay;
+  if (_import || _removingGameData || _preparingEngine) { completion(NO); return; }
+  NSURL *game=[[self gameDataSupportURL] URLByAppendingPathComponent:@"GameData" isDirectory:YES];
+  NSURL *folder=[game URLByAppendingPathComponent:@"RMGE01" isDirectory:YES];
+  void (^select)(void)=^{
+    GalaxyPadSettings.sharedSettings.engine=GalaxyPadEngineNew;
+    [GalaxyPadSettings.sharedSettings synchronize];
+    self->_status.hidden=NO;
+    self->_status.text=@"New engine selected. Close and reopen GalaxyPad to use it.";
+    completion(YES);
+  };
+  if ([NSFileManager.defaultManager fileExistsAtPath:
+      [folder URLByAppendingPathComponent:@GalaxyPadFilesCompleteMarker].path]) { select(); return; }
+  // Installs from older builds hold only the files the Original engine reads.
+  _preparingEngine=YES;
+  auto cancelled=std::make_shared<std::atomic<bool>>(false);
+  UIAlertController *progress=[UIAlertController alertControllerWithTitle:@"Preparing the New Engine"
+    message:@"Adding the game files the New engine reads (up to 3.2 GB). Saves are unchanged."
+    preferredStyle:UIAlertControllerStyleAlert];
+  [progress addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel
+    handler:^(UIAlertAction *action) { (void)action; cancelled->store(true); }]];
+  [self presentViewController:progress animated:YES completion:nil];
+  [self reconcileNativeUI];
+  [GalaxyPadDiscExtractor completeFilesForImageAtPath:[game URLByAppendingPathComponent:@"RMGE01.wbfs"].path
+    directory:folder.path cancelled:^BOOL { return cancelled->load(); }
+    progress:^(double fraction) {
+      progress.message=[NSString stringWithFormat:@"Adding the game files the New engine reads — %.0f%%",100*fraction];
+    } completion:^(BOOL ok,NSString *error) {
+      self->_preparingEngine=NO;
+      void (^finish)(void)=^{
+        if (ok) select();
+        else { self->_status.hidden=NO; self->_status.text=error; completion(NO); }
+        [self reconcileNativeUI];
+      };
+      if (progress.presentingViewController) [progress dismissViewControllerAnimated:YES completion:finish];
+      else finish();
+    }];
+}
 - (void)documentPicker:(UIDocumentPickerViewController *)picker didPickDocumentsAtURLs:(NSArray<NSURL *> *)urls {
   if (urls.count!=1 || _import) return;
   [picker dismissViewControllerAnimated:YES completion:^{ [self beginImport:urls.firstObject]; }];
 }
 - (void)beginImport:(NSURL *)source {
-  if (_import || _removingGameData) return;
+  if (_import || _removingGameData || _preparingEngine) return;
   NSURL *root=[self gameDataSupportURL];
   if (![NSFileManager.defaultManager createDirectoryAtURL:root withIntermediateDirectories:YES attributes:nil error:nil]) {
     _status.hidden=NO; _status.text=@"Private import storage is unavailable."; return;
@@ -655,7 +707,7 @@ static double GalaxyPadResidentMiB(void) {
 }
 - (void)gameOverlayRequestsGameDataFolderImport:(GalaxyPadGameOverlay *)overlay {
   (void)overlay;
-  if (_import || _removingGameData) return;
+  if (_import || _removingGameData || _preparingEngine) return;
   // SunPad's Documents-folder selection flow. Only Documents is Files-visible;
   // installed images, staging, runtime logs and NAND stay in Application Support.
   NSURL *documents=[NSFileManager.defaultManager URLsForDirectory:NSDocumentDirectory
@@ -713,7 +765,7 @@ static double GalaxyPadResidentMiB(void) {
 }
 - (void)gameOverlayRequestsGameDataRemoval:(GalaxyPadGameOverlay *)overlay {
   (void)overlay;
-  if (_import || _removingGameData) return;
+  if (_import || _removingGameData || _preparingEngine) return;
   // The existing SunPad destructive confirmation precedes this delegate call.
   _removingGameData=YES;
   [self reconcileNativeUI];
@@ -943,7 +995,58 @@ static double GalaxyPadResidentMiB(void) {
 @end
 @implementation GalaxyPadAppDelegate
 @end
+#if GALAXYPAD_NEW_ENGINE
+// GalaxyPadEngine.framework (ref/galaxypad-engine); its only exported symbol.
+extern "C" int galaxypad_engine_main(int argc, char *argv[]);
+// Engine setting (docs/ENGINE-SWITCH-PLAN.md). The New engine runs the whole app
+// when it is selected and an imported game is installed. Otherwise GalaxyPad
+// starts as before, so importing a game always happens here.
+static BOOL GalaxyPadNewEngineArguments(int argc, char *argv[], NSMutableArray<NSString *> *arguments) {
+  if (GalaxyPadSettings.sharedSettings.engine != GalaxyPadEngineNew) return NO;
+  NSFileManager *files = NSFileManager.defaultManager;
+  NSURL *support = [files URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask].firstObject;
+  NSURL *base = [support URLByAppendingPathComponent:@"GalaxyPad" isDirectory:YES];
+  NSURL *game = [base URLByAppendingPathComponent:@"GameData/RMGE01" isDirectory:YES];
+  NSURL *user = [base URLByAppendingPathComponent:@"NewEngine" isDirectory:YES];
+  // The marker means files/ holds every file on the disc (GalaxyPadDiscExtractor).
+  if (![files fileExistsAtPath:[game URLByAppendingPathComponent:@"sys/main.dol"].path] ||
+      ![files fileExistsAtPath:[game URLByAppendingPathComponent:@GalaxyPadFilesCompleteMarker].path] ||
+      ![files createDirectoryAtURL:user withIntermediateDirectories:YES attributes:nil error:nil])
+    return NO;
+  [arguments addObject:@(argc > 0 ? argv[0] : "GalaxyPad")];
+  [arguments addObjectsFromArray:@[@"--disc", game.path, @"--user", user.path]];
+  // Milestone 1 saves: the engine copies the Original Wii save once, when the New
+  // engine has no save yet. It only reads this file.
+  NSURL *wiiSave = [base URLByAppendingPathComponent:@"Wii/title/00010000/524d4745/data/GameData.bin"];
+  if ([files fileExistsAtPath:wiiSave.path])
+    [arguments addObjectsFromArray:@[@"--import-wii-save", wiiSave.path]];
+  // Device tests from a Mac add engine options (a test --user and fixture) after
+  // GalaxyPad's. The engine refuses unknown options, so this happens only on request.
+  const char *forward = getenv("GALAXYPAD_TEST_ENGINE_ARGS");
+  if (forward && strcmp(forward, "1") == 0)
+    for (int i = 1; i < argc; ++i) [arguments addObject:@(argv[i])];
+  return YES;
+}
+// Hands the process to the New engine when it is selected; returns NO otherwise.
+static BOOL GalaxyPadRunSelectedEngine(int argc, char *argv[], int *status) {
+  @autoreleasepool {
+    NSMutableArray<NSString *> *arguments = [NSMutableArray array];
+    if (!GalaxyPadNewEngineArguments(argc, argv, arguments)) return NO;
+    // Lets the engine's Home menu offer "Original engine..." (it writes GalaxyPadEngine).
+    setenv("GALAXYPAD_ENGINE_HOST", "1", 1);
+    // The engine keeps argv for the life of the process.
+    char **engineArgv = (char **)calloc(arguments.count + 1, sizeof(char *));
+    for (NSUInteger i = 0; i < arguments.count; ++i) engineArgv[i] = strdup(arguments[i].fileSystemRepresentation);
+    *status = galaxypad_engine_main((int)arguments.count, engineArgv);
+    return YES;
+  }
+}
+#else
+static BOOL GalaxyPadRunSelectedEngine(int, char *[], int *) { return NO; }
+#endif
 int main(int argc, char *argv[]) {
+  int engineStatus = 0;
+  if (GalaxyPadRunSelectedEngine(argc, argv, &engineStatus)) return engineStatus;
   // Guarded decoder byte stores: R647/R648/R650 mobile confirmation.
   // Set before runtime threads start; preserve explicit opt-out and other values.
   setenv("GALAXYPAD_LC_BYTE_FAST", "1", 0);

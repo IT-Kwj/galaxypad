@@ -14,10 +14,13 @@ the maintained forks, selected through pinned submodules. Exact references are i
 Original project names, author histories, licenses and per-file notices remain
 attached to that work. Optional experiments do not change the normal source graph.
 
-The New engine source (`ref/galaxypad-engine`, from MacioGalaxy and the Petari
-decompilation, both CC0) is pinned the same way but not yet built into the app.
-When it is, its bundled third-party code (including Aurora, Dawn and SDL) needs its
-license texts listed here and shipped with the app.
+The New engine (`ref/galaxypad-engine`, from MacioGalaxy and the Petari
+decompilation, both CC0) is pinned the same way. iOS device builds embed it as
+`GalaxyPadEngine.framework`, which bundles Aurora (MIT), Dawn (BSD-3-Clause),
+SDL (zlib), Dear ImGui (MIT), abseil (Apache-2.0), fmt (MIT), xxHash (BSD-2-Clause),
+zstd (BSD-3-Clause) and libpng (libpng license). Their license texts must be listed
+here and shipped with the app before any release that includes it (engine switch
+plan, Milestone 2).
 
 The historical Preview 1 packages include PreviewNotices with original license texts from the runtime
 and its bundled third-party dependencies. The release source supplement contains

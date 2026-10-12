@@ -7,11 +7,12 @@ app has. This is the working plan for that change, done in milestones over
 several sessions. Read it with the [native engine plan](NATIVE-ENGINE-PLAN.md),
 which holds the research and the device measurements behind it.
 
-**Status, 12 October 2026:** Milestone 1, step 1 done. The New engine's source is
+**Status, 12 October 2026:** Milestone 1, step 2 built: device builds of GalaxyPad
+embed the New engine, with the Engine setting and launch choice in place (steps 3
+and 4 in code). Not yet run on a device. The engine source is
 [chrissotraidis/galaxypad-engine](https://github.com/chrissotraidis/galaxypad-engine),
-pinned in GalaxyPad at `ref/galaxypad-engine`; the app does not build it yet. It
-also runs as a separate test app (`org.galaxypad.native-probe`) on the iPhone 14
-and iPad Pro.
+pinned at `ref/galaxypad-engine`. It also runs as a separate test app
+(`org.galaxypad.native-probe`) on the iPhone 14 and iPad Pro.
 
 ## What the player gets
 
@@ -127,3 +128,68 @@ Approved by the owner on 12 October 2026 ("proceed with this plan"):
   README header naming the source and credits). Pinned at `ref/galaxypad-engine`;
   `bootstrap-dependencies.sh` checks it out and `dependency-lock.py` verifies it.
   Next: step 2, both engines in one app.
+- **12 October 2026:** step 2, both engines in one app (PR "Build the New engine
+  into GalaxyPad"). The engine (`galaxypad-engine` `e018bebb`) builds
+  `GalaxyPadEngine.framework`: one exported symbol, `galaxypad_engine_main`,
+  which starts the game through `SDL_RunApp`. GalaxyPad's executable defines 15 SDL
+  Objective-C classes of its own (the Original engine's SDL), and Objective-C class
+  names are process-wide, so the engine's build renames all 40 classes SDL
+  implements with a `GPE_` prefix; the app and framework now define no class in
+  common (checked with `nm`). SDL, abseil and the prebuilt Dawn package, which
+  Aurora fetches without a hash, are checked against recorded SHA-256 values.
+  `scripts/build-ios-engine.sh` builds it (device only: the prebuilt Dawn has no
+  Simulator package); a clean build took 195 s on an M3 Max (28 CPU minutes). The
+  device app embeds the framework in `Frameworks/` and the 400 MB of shader
+  manifests in `pipeline-seeds/` (app 459 MB; size is a Milestone 2 item), and
+  loads it only from `@executable_path/Frameworks`.
+  Launch choice (step 3): `main()` hands the process to the engine when the setting
+  is New and an imported game is installed, with `--disc GameData/RMGE01` and
+  `--user GalaxyPad/NewEngine`; otherwise GalaxyPad starts as before. Setting
+  (step 4): "Engine (Next Launch)" in GalaxyPad's menu, and "Original engine..." in
+  the engine's Home menu (with confirmation; it saves the setting and closes the
+  game like Quit). Local checks: device build of core, engine and app passes; the
+  repository suite passes except the host-pressure probe, which cannot read host
+  counters in this session and runs in CI.
+  Found on the way: this Mac's Homebrew minizip-ng was picked up by the core's
+  `USE_SYSTEM_LIBS=AUTO` (a local rebuild used an empty pkg-config path), and
+  Homebrew libpng by the engine's pkg-config lookup (the build script turns it off).
+  The private build artifacts for the installed build 7202 (its game module) are
+  no longer on this Mac, so Milestone 1 builds use a freshly generated
+  Original-engine module. 7202's module experiments (loop promotion and a faster
+  chunk lookup) measured no frame-rate change ([September 26
+  handoff](IPHONE-PERFORMANCE-2026-09-26.md)), and its touch calibration is in
+  source, so replacing it under the approved backup rules loses nothing measured.
+- **12 October 2026:** steps 5 and 6, and the first iPhone install.
+  Disc (step 5): the iPhone's GalaxyPad holds the game as `RMGE01.wbfs` plus an
+  extracted folder with only `sys/` and the two files the import verifies; the
+  Original engine reads the image. The New engine reads every file, and a missing
+  movie stops it (`MoviePlayerSimple::startMovie` panics), so all 3.2 GB are
+  needed. Choosing New in the Engine menu now adds the missing files from the
+  installed image first (same checked export as the import; each file written
+  under a temporary name, free space checked first), with progress and Cancel, and
+  writes a marker; new imports write it too. The launch path requires the marker.
+  Storage (Milestone 2): both engines' data is image plus folder, about 6.7 GB.
+  Saves (step 6): GalaxyPad passes the Original Wii save to the engine
+  (`--import-wii-save`, `galaxypad-engine` `e35d9ac3`), which copies it once into
+  `GalaxyPad/NewEngine` when that has no save, keeps a checked backup and only
+  reads the Wii file. Byte-identical to the research converter on the real
+  121-star save.
+  CI: `ios-build` now uses Xcode 26.3 (Xcode 16.4's libc++ has no
+  `std::jthread`), and `galaxypad-engine` `38045bc4` uses the host `strtoul`
+  declaration that the iOS 26.2 SDK requires. The engine's Home menu tests cover the
+  "Original engine..." item (absent outside GalaxyPad, asks first, Cancel changes
+  nothing, Switch saves once and closes like Quit).
+  iPhone 14 (build 7212, `org.galaxypad.GalaxyPad`, same signing
+  identity): 61 save, setting and preference files backed up and read back
+  identically, then unchanged byte for byte after installing 7210, 7211 and 7212. To
+  make room (2.5 GB free), the Galaxy Native test app's game copy (3.4 GB, the
+  same 2,375 files as the research copy on the Mac) was removed; its save in
+  `Library/Application Support/Petari` was kept. A Mac launching the app with
+  `GALAXYPAD_TEST_SELECT_NEW_ENGINE=1` runs the Engine menu's New choice without
+  touch, and `GALAXYPAD_TEST_ENGINE_ARGS=1` passes its launch arguments to the
+  engine (a test `--user` and fixture), for device tests.
+  Not done on 12 October so far: launch and play on the iPhone (it was locked), the
+  iPad (unavailable).
+  Not in Milestone 1: `CADisableMinimumFrameDurationOnPhone`, which iPhones with
+  ProMotion need for 120 Hz; the Original engine's display link sets no rate, so
+  adding it needs its own check.

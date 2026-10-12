@@ -70,6 +70,15 @@
     return [[NSUserDefaults standardUserDefaults] boolForKey:@"GalaxyPadShowFPSCounter"];
 }
 
+- (GalaxyPadEngine)engine {
+    return [NSUserDefaults.standardUserDefaults integerForKey:@"GalaxyPadEngine"] == GalaxyPadEngineNew
+        ? GalaxyPadEngineNew : GalaxyPadEngineOriginal;
+}
+- (void)setEngine:(GalaxyPadEngine)engine {
+    [NSUserDefaults.standardUserDefaults setInteger:engine == GalaxyPadEngineNew ? GalaxyPadEngineNew
+        : GalaxyPadEngineOriginal forKey:@"GalaxyPadEngine"];
+}
+
 - (NSInteger)mainVolume {
     id saved = [NSUserDefaults.standardUserDefaults objectForKey:@"GalaxyPadMainVolume"];
     double value = [saved isKindOfClass:NSNumber.class] ? [saved doubleValue] : 100;
