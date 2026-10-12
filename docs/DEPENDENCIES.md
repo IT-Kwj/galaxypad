@@ -12,6 +12,7 @@ intact; [credits](../CREDITS.md) identify the original projects and contributors
 | `ref/ModernGekko` | [chrissotraidis/ModernGekko](https://github.com/chrissotraidis/ModernGekko) | [ExpansionPak/ModernGekko](https://github.com/ExpansionPak/ModernGekko) |
 | `ref/ModernGekko/vendor/dolphin` | [chrissotraidis/RecompCore](https://github.com/chrissotraidis/RecompCore) | [ExpansionPak/RecompCore](https://github.com/ExpansionPak/RecompCore) |
 | `ref/ModernGekko/vendor/dolphin/DolRecomp` | [chrissotraidis/DolRecomp](https://github.com/chrissotraidis/DolRecomp) | [ExpansionPak/DolRecomp](https://github.com/ExpansionPak/DolRecomp) |
+| `ref/galaxypad-engine` | [chrissotraidis/galaxypad-engine](https://github.com/chrissotraidis/galaxypad-engine) | [classicrob/MacioGalaxy](https://github.com/classicrob/MacioGalaxy) |
 
 The app pins ModernGekko, ModernGekko pins RecompCore, and RecompCore pins DolRecomp
 and its other third-party dependencies. Git submodule references select exact
@@ -19,6 +20,15 @@ commits. The [dependency lock](../config/dependencies.lock.json) records the cho
 revisions and upstream bases; it is the current inventory, rather than the dated
 patch notes below. SunPad, ModernGekko-Template and Petari remain pinned reference
 sources and do not need forks without changes of their own.
+
+`ref/galaxypad-engine` is the New engine of the
+[engine switch plan](ENGINE-SWITCH-PLAN.md): the Petari decompilation built as a
+native app by MacioGalaxy, with GalaxyPad's iOS changes as commits after the
+MacioGalaxy base recorded in the lock. It is a standalone repository, not a GitHub
+fork, and GalaxyPad does not send changes upstream. It has no submodules. Its build
+fetches Aurora at a full commit (`native/gx/CMakeLists.txt`), and Aurora fetches
+Dawn, SDL and others; those pins are checked before the app builds the engine
+(Milestone 1). The app does not build or link it yet.
 
 The [migration record](../config/dependency-migration.json) maps the former patch
 files to fork commits, records their source revisions and hashes, and identifies

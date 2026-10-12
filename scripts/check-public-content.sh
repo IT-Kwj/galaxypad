@@ -8,9 +8,9 @@ fi
 root="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 cd "$root"
 
-# Permit only the dependency gitlink, never source/data files under ref/.
+# Permit only the dependency gitlinks, never source/data files under ref/.
 tracked="$(git ls-files --stage | awk '
-  $1 == "160000" && $4 == "ref/ModernGekko" { next }
+  $1 == "160000" && ($4 == "ref/ModernGekko" || $4 == "ref/galaxypad-engine") { next }
   { sub(/^[^\t]*\t/, ""); print }
 ')"
 prohibited="$(printf '%s\n' "$tracked" | rg -i '(^|/)(ref|generated|extracted|game-data|runtime-data|modules|saves|save|nand|docs/artifacts|artifacts)/|\.(iso|gcm|rvz|wia|wbfs|gcz|dol|rel|rso|dylib|ipa|xcarchive|mobileprovision|provisionprofile|p12|pem|key|cer|gci|sav|raw|crash|ips|trace|log|profraw|profdata)$|(^|/)GameData\.bin$' || true)"

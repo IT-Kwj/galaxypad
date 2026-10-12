@@ -3,6 +3,7 @@
 set -euo pipefail
 root="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 runtime="$root/ref/ModernGekko"
+engine="$root/ref/galaxypad-engine"
 sources_only=false
 references=false
 for argument in "$@"; do
@@ -19,13 +20,17 @@ if [[ -L "$runtime" ]]; then
   echo "ref/ModernGekko is a local symlink; use a new checkout for pinned submodules." >&2
   exit 1
 fi
-if [[ -e "$runtime/.git" && -n "$(git -C "$runtime" status --porcelain --untracked-files=all --ignore-submodules=none)" ]]; then
-  echo "Dependency checkout has local changes; preserve them before updating: $runtime" >&2
-  exit 1
-fi
+for checkout in "$runtime" "$engine"; do
+  if [[ -e "$checkout/.git" && -n "$(git -C "$checkout" status --porcelain --untracked-files=all --ignore-submodules=none)" ]]; then
+    echo "Dependency checkout has local changes; preserve them before updating: $checkout" >&2
+    exit 1
+  fi
+done
 
 git -C "$root" submodule sync --recursive
 git -C "$root" submodule update --init --no-recommend-shallow -- ref/ModernGekko
+# The New engine (docs/ENGINE-SWITCH-PLAN.md); it has no submodules of its own.
+git -C "$root" submodule update --init --no-recommend-shallow -- ref/galaxypad-engine
 git -C "$runtime" submodule update --init --no-recommend-shallow -- vendor/dolphin
 git -C "$runtime/vendor/dolphin" submodule update --init --no-recommend-shallow -- DolRecomp
 if [[ "$sources_only" == false ]]; then

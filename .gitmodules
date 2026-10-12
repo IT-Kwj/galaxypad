@@ -2,3 +2,7 @@
 	path = ref/ModernGekko
 	url = https://github.com/chrissotraidis/ModernGekko.git
 	branch = codex/galaxypad-integration
+[submodule "ref/galaxypad-engine"]
+	path = ref/galaxypad-engine
+	url = https://github.com/chrissotraidis/galaxypad-engine.git
+	branch = main

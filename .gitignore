@@ -1,8 +1,8 @@
 .DS_Store
 **/.DS_Store
 
-# Reference data stays local. The exact ref/ModernGekko gitlink is tracked;
-# its contents belong to the pinned dependency repositories.
+# Reference data stays local. The exact ref/ModernGekko and ref/galaxypad-engine
+# gitlinks are tracked; their contents belong to the pinned dependency repositories.
 ref/
 
 # Extracted and generated game-derived material.
