@@ -1,6 +1,24 @@
 # GalaxyPad status
 
-## September 26 iPhone session (current)
+## October 11 native engine research (current direction)
+
+**12 October overnight:** the native build now plays on the iPhone 14 and iPad Pro
+as a separate Home Screen app (Galaxy Native) with touch controls. On a hot iPhone
+14 the restored Comet Observatory held 60 FPS for 10 minutes (one frame over 20 ms
+in 35,949), against 33-38 FPS for build 7202. Details and remaining work are in the
+[native engine plan](NATIVE-ENGINE-PLAN.md).
+
+**Next:** the [engine switch plan](ENGINE-SWITCH-PLAN.md) adds an Engine setting
+to GalaxyPad (Original or New) in two milestones. GalaxyPad itself has not
+changed yet.
+
+Read the [native engine plan](NATIVE-ENGINE-PLAN.md) before more compiler work.
+The Petari decompilation is complete and has a USA configuration. An independent
+native port (MacioGalaxy, CC0, Metal through Aurora), with our iOS changes, plays
+on the iPhone 14 and iPad Pro as a separate test app; GalaxyPad, its forks and
+build 7202 are unchanged.
+
+## September 26 iPhone session (compiler handoff)
 
 Read the [September 26 iPhone handoff](IPHONE-PERFORMANCE-2026-09-26.md) first;
 it supersedes the performance priorities below. On a hot iPhone 14 at 1x the
