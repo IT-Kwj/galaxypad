@@ -90,7 +90,7 @@ save hashes match before and after; the owner has tried both.
 ## Milestone 2: ready to release
 
 - Saves both ways: converting the New engine's save back when switching to
-  Original, with backups, so progress follows the player.
+  Original, with backups, so progress follows the player. (Built 12 October.)
 - App size, first-launch time and storage measured on both devices.
 - GalaxyPad's look for the New engine's screens and controls
   ([touch design](GALAXY-TOUCH-DESIGN.md)); game controllers verified.
@@ -114,7 +114,8 @@ Approved by the owner on 12 October 2026 ("proceed with this plan"):
 | --- | --- |
 | Engine source | A standalone public repository, `chrissotraidis/galaxypad-engine`, not a GitHub fork. GalaxyPad uses MacioGalaxy's work and credits it; it does not contribute changes back. |
 | Default engine | Original until the owner's playtest of New. |
-| Saves in Milestone 1 | One-way copy into New; the Original save is never changed. Both ways in Milestone 2. |
+| Saves in Milestone 1 | One-way copy into New; the Original save is never changed. Both ways in Milestone 2 (now built: see the progress log). |
+| Testing (12 October) | iOS Simulator (iPad and iPhone) in place of the owner's devices. |
 | Installing Milestone 1 over the real GalaxyPad | Yes, after a verified backup. |
 
 ## Progress log
@@ -202,3 +203,56 @@ Approved by the owner on 12 October 2026 ("proceed with this plan"):
   folder needs no writes, a damaged file and a leftover temporary file are
   repaired, and a damaged `main.dol` is refused (2,384 checks). The engine's 91
   Mac tests pass.
+- **12 October 2026:** testing moves to the iOS Simulator (owner: "just test on
+  simulators. get all the work done for this next version"), and the work for the
+  next version continues. Simulator builds of the app now include the New engine:
+  the Simulator has no prebuilt Dawn, so the engine builds Dawn from its pinned
+  source commit (Metal only), checked by SHA-256 (`galaxypad-engine` `46e1ed6c`).
+  Two problems found and fixed on the way:
+  - **The New engine never started.** UIKit reuses a saved scene session, which
+    named GalaxyPad's scene delegate, so the Original engine took the window. The
+    engine now always asks for GalaxyPad's scene configuration, and GalaxyPad's
+    scene delegate hands the scene to SDL's when the New engine runs the app
+    (`c790aee4`). This would have happened on devices too.
+  - **The test switch ran too early.** Its progress alert, shown during the
+    launch rotation, left the Original engine drawing in part of the screen. It
+    now runs after the first frame, as a player would; the menu's note also
+    fades after five seconds.
+  Saves both ways (Milestone 2 item, done): `--wii-save` copies the Wii save in
+  when the New engine starts and its own save out when the player chooses
+  "Original engine..." (`3a7ae6cb`). A copy only replaces a save that is missing or
+  unchanged since the last copy; when both changed, each engine keeps its own.
+  Every replaced file is kept, byte-checked. Mac tests cover both directions,
+  repeat runs, conflicts and a damaged save; the engine's 91 tests pass.
+  iPad Air 11-inch (M4) Simulator, iPadOS 27.0, GalaxyPad at engine `c790aee4`, with
+  the real image, an older install's partial folder and a copy of the iPhone's Wii
+  save (`cd8d1fa9`):
+  - Original engine: title screen at 59.9 FPS.
+  - Engine menu, New: 3.2 GB of files added, marker written, setting saved.
+  - New engine: save copied in, byte-identical to `wii_save_to_native.py`'s
+    output; shader preparation on first launch (9,549 shaders); the galaxy route
+    by touch passed (observatory, Terrace, Good Egg mission 1: idle, jump,
+    opposite moves, pause and resume).
+  - Home menu, Original engine..., Switch (real taps): setting back to Original,
+    the game closes; nothing copied, because nothing was played. The Original
+    engine starts and the Wii save is unchanged (`cd8d1fa9`).
+  - Saves back: with a different save standing in for New progress, the switch
+    copied it out (converted back by the script: identical), kept the replaced
+    Wii save (`cd8d1fa9`), and the Original engine's file select shows it.
+  - GalaxyPad's three-dot menu, Engine, New (real taps): selected, with the note.
+  iPhone 18 Pro Simulator, iOS 27.0, same build and data:
+  - Original engine: title screen at 59 FPS.
+  - Engine menu, New (test switch, after the first frame): 3.2 GB of files
+    added, the game kept the full screen, and the note faded.
+  - New engine: save copied in (`7e394e41`, as on the iPad), shader preparation,
+    and the galaxy route by touch passed unattended. A first run passed its
+    checks but was marked ASSISTED: four presses of the Mac's Command key reached
+    the Simulator during it.
+  - Home menu, Original engine..., Switch (real taps): setting back to Original,
+    the Original engine starts at 59 FPS, Wii save unchanged (`cd8d1fa9`).
+  Licenses (Milestone 2 release requirement): `GalaxyPadEngine.framework` now ships
+  the license text of everything it links in its `Licenses` folder (`galaxypad-engine`
+  `404ada13`), copied from the fetched sources; both app builds carry all twelve.
+  `THIRD-PARTY-NOTICES.md` lists them and points there.
+  For the owner's playtest: the New engine's Home menu follows the Wii, where a
+  tap points at an item and A chooses it; a tap does not choose it directly.

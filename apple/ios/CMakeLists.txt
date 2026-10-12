@@ -79,15 +79,14 @@ target_link_libraries(GalaxyPad PRIVATE
   "${ROOT}/generated/ios/${GALAXYPAD_SDK}/libs/libGalaxyPadCore.a"
   z bz2 iconv resolv compression)
 # The New engine (docs/ENGINE-SWITCH-PLAN.md): GalaxyPadEngine.framework from
-# ref/galaxypad-engine, built by scripts/build-ios-engine.sh. Device builds only:
-# the engine's prebuilt Dawn has no Simulator package.
-if(GALAXYPAD_SDK STREQUAL "iphoneos")
-  option(GALAXYPAD_NEW_ENGINE "Embed the New engine (GalaxyPadEngine.framework)" ON)
-else()
-  set(GALAXYPAD_NEW_ENGINE OFF)
-endif()
+# ref/galaxypad-engine, built by scripts/build-ios-engine.sh for the same SDK.
+option(GALAXYPAD_NEW_ENGINE "Embed the New engine (GalaxyPadEngine.framework)" ON)
 if(GALAXYPAD_NEW_ENGINE)
-  set(ENGINE_APP_BUILD "${ROOT}/generated/build/ios-device-engine/native/app")
+  if(GALAXYPAD_SDK STREQUAL "iphoneos")
+    set(ENGINE_APP_BUILD "${ROOT}/generated/build/ios-device-engine/native/app")
+  else()
+    set(ENGINE_APP_BUILD "${ROOT}/generated/build/ios-simulator-engine/native/app")
+  endif()
   set(ENGINE_FRAMEWORK "${ENGINE_APP_BUILD}/GalaxyPadEngine.framework")
   if(NOT EXISTS "${ENGINE_FRAMEWORK}/GalaxyPadEngine" OR NOT IS_DIRECTORY "${ENGINE_APP_BUILD}/pipeline-seeds")
     message(FATAL_ERROR "Run scripts/build-ios-engine.sh first (or configure with -DGALAXYPAD_NEW_ENGINE=OFF)")
