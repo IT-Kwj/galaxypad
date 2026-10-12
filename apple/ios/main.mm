@@ -422,15 +422,6 @@ static double GalaxyPadResidentMiB(void) {
   if (_attemptedStart) return;
   _attemptedStart = YES;
   [self startGame];
-#if GALAXYPAD_NEW_ENGINE
-  // Device testing from a Mac (devicectl launch --environment-variables) runs the
-  // Engine menu's New choice without touch. Players never set it.
-  const char *selectNew = getenv("GALAXYPAD_TEST_SELECT_NEW_ENGINE");
-  if (selectNew && strcmp(selectNew, "1") == 0)
-    [self gameOverlayRequestsNewEngine:_overlay completion:^(BOOL selected) {
-      GalaxyPadLog(@"engine test: New selected=%d", selected);
-    }];
-#endif
 }
 - (void)restartGame {
   if (_host.busy || _import || _removingGameData || self.presentedViewController) return;
@@ -493,6 +484,15 @@ static double GalaxyPadResidentMiB(void) {
         view->_status.hidden = YES; // renderer is presenting, not gameplay acceptance
         [timer invalidate];
         view->_startupTimer = nil;
+#if GALAXYPAD_NEW_ENGINE
+        // Tests from a Mac (devicectl or simctl launch environment) run the Engine
+        // menu's New choice once the game shows, as a player would. Players never set it.
+        const char *selectNew = getenv("GALAXYPAD_TEST_SELECT_NEW_ENGINE");
+        if (selectNew && strcmp(selectNew, "1") == 0)
+          [view gameOverlayRequestsNewEngine:view->_overlay completion:^(BOOL selected) {
+            GalaxyPadLog(@"engine test: New selected=%d", selected);
+          }];
+#endif
       }
     }];
   } else {
@@ -635,8 +635,13 @@ static double GalaxyPadResidentMiB(void) {
   void (^select)(void)=^{
     GalaxyPadSettings.sharedSettings.engine=GalaxyPadEngineNew;
     [GalaxyPadSettings.sharedSettings synchronize];
+    NSString *message=@"New engine selected. Close and reopen GalaxyPad to use it.";
     self->_status.hidden=NO;
-    self->_status.text=@"New engine selected. Close and reopen GalaxyPad to use it.";
+    self->_status.text=message;
+    // The game keeps running; take the note away after a moment.
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,(int64_t)(5*NSEC_PER_SEC)),dispatch_get_main_queue(),^{
+      if ([self->_status.text isEqualToString:message] && self->_host.renderedFrames>0) self->_status.hidden=YES;
+    });
     completion(YES);
   };
   if ([NSFileManager.defaultManager fileExistsAtPath:
@@ -974,6 +979,17 @@ static double GalaxyPadResidentMiB(void) {
 @implementation GalaxyPadSceneDelegate
 - (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session
     options:(UISceneConnectionOptions *)options {
+  // The New engine runs the app (GALAXYPAD_ENGINE_HOST, set in main): its SDL
+  // scene delegate takes this scene. Saved sessions always name this class, so
+  // the Original engine finds its own delegate at the next launch.
+  const char *engineHost = getenv("GALAXYPAD_ENGINE_HOST");
+  if (engineHost && strcmp(engineHost, "1") == 0) {
+    NSObject *app = (NSObject *)UIApplication.sharedApplication.delegate;
+    id<UIWindowSceneDelegate> engine = [[app.class alloc] init];
+    scene.delegate = engine;
+    [engine scene:scene willConnectToSession:session options:options];
+    return;
+  }
   (void)session; (void)options;
   if (![scene isKindOfClass:UIWindowScene.class]) return;
   self.window = [[UIWindow alloc] initWithWindowScene:(UIWindowScene *)scene];
@@ -1015,11 +1031,10 @@ static BOOL GalaxyPadNewEngineArguments(int argc, char *argv[], NSMutableArray<N
     return NO;
   [arguments addObject:@(argc > 0 ? argv[0] : "GalaxyPad")];
   [arguments addObjectsFromArray:@[@"--disc", game.path, @"--user", user.path]];
-  // Milestone 1 saves: the engine copies the Original Wii save once, when the New
-  // engine has no save yet. It only reads this file.
+  // Both engines keep the same progress: the engine copies the Original engine's
+  // Wii save in at start and its own save out when the player switches back.
   NSURL *wiiSave = [base URLByAppendingPathComponent:@"Wii/title/00010000/524d4745/data/GameData.bin"];
-  if ([files fileExistsAtPath:wiiSave.path])
-    [arguments addObjectsFromArray:@[@"--import-wii-save", wiiSave.path]];
+  [arguments addObjectsFromArray:@[@"--wii-save", wiiSave.path]];
   // Device tests from a Mac add engine options (a test --user and fixture) after
   // GalaxyPad's. The engine refuses unknown options, so this happens only on request.
   const char *forward = getenv("GALAXYPAD_TEST_ENGINE_ARGS");

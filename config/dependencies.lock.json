@@ -34,7 +34,7 @@
     },
     "galaxyPadEngine": {
       "url": "https://github.com/chrissotraidis/galaxypad-engine.git",
-      "revision": "38045bc47566a1bce2047433b999d38ac98f9810",
+      "revision": "c790aee4794efada06de5c1920c600b60a775bc7",
       "upstreamUrl": "https://github.com/classicrob/MacioGalaxy.git",
       "upstreamRevision": "4bbf2af23d694a835652f7ac218034cb3cebade4"
     }

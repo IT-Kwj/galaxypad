@@ -27,11 +27,14 @@ native app by MacioGalaxy, with GalaxyPad's iOS changes as commits after the
 MacioGalaxy base recorded in the lock. It is a standalone repository, not a GitHub
 fork, and GalaxyPad does not send changes upstream. It has no submodules. Its build
 fetches Aurora at a full commit (`native/gx/CMakeLists.txt`). Aurora fetches its
-other sources by SHA-256, except SDL, abseil and the prebuilt Dawn package, which
-the engine checks against recorded hashes (`native/gx/verify_downloads.cmake`).
-`scripts/build-ios-engine.sh` builds it as `GalaxyPadEngine.framework` for iOS
-devices, and device builds of the app embed it; Simulator builds leave it out,
-because the prebuilt Dawn has no Simulator package.
+other sources by SHA-256, except SDL, abseil and Dawn, which the engine checks
+against recorded hashes (`native/gx/verify_downloads.cmake`). Devices use Dawn's
+prebuilt iOS package; the Simulator has none, so it builds Dawn from the source
+archive at Aurora's pinned Dawn commit, and Dawn fetches its own dependencies at
+the commits its DEPS file names. `scripts/build-ios-engine.sh` builds
+`GalaxyPadEngine.framework` for the SDK in `GALAXYPAD_IOS_SDK`, and the app
+embeds it (configure with `-DGALAXYPAD_NEW_ENGINE=OFF` to leave it out). CI builds
+the device app; the Simulator build compiles Dawn and takes much longer.
 
 The [migration record](../config/dependency-migration.json) maps the former patch
 files to fork commits, records their source revisions and hashes, and identifies
