@@ -193,3 +193,12 @@ Approved by the owner on 12 October 2026 ("proceed with this plan"):
   Not in Milestone 1: `CADisableMinimumFrameDurationOnPhone`, which iPhones with
   ProMotion need for 120 Hz; the Original engine's display link sets no rate, so
   adding it needs its own check.
+- **12 October 2026:** PR #20 merged (`ab28e2d`; `source-checks` and `ios-build`
+  pass). Game-file completion checked against the real image (copied from the
+  iPhone; same size as installed) in the iOS Simulator:
+  `tests/test-engine-files-completion.sh` (private evidence) builds an older
+  install's folder, completes it, and finds all 2,371 files identical to the
+  research copy. It also checks that Cancel stops without a marker, a complete
+  folder needs no writes, a damaged file and a leftover temporary file are
+  repaired, and a damaged `main.dol` is refused (2,384 checks). The engine's 91
+  Mac tests pass.
