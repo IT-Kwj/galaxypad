@@ -88,7 +88,7 @@ if(GALAXYPAD_NEW_ENGINE)
     set(ENGINE_APP_BUILD "${ROOT}/generated/build/ios-simulator-engine/native/app")
   endif()
   set(ENGINE_FRAMEWORK "${ENGINE_APP_BUILD}/GalaxyPadEngine.framework")
-  if(NOT EXISTS "${ENGINE_FRAMEWORK}/GalaxyPadEngine" OR NOT IS_DIRECTORY "${ENGINE_APP_BUILD}/pipeline-seeds")
+  if(NOT EXISTS "${ENGINE_FRAMEWORK}/GalaxyPadEngine" OR NOT EXISTS "${ENGINE_APP_BUILD}/pipeline-seeds.xz")
     message(FATAL_ERROR "Run scripts/build-ios-engine.sh first (or configure with -DGALAXYPAD_NEW_ENGINE=OFF)")
   endif()
   target_compile_definitions(GalaxyPad PRIVATE GALAXYPAD_NEW_ENGINE=1)
@@ -96,12 +96,13 @@ if(GALAXYPAD_NEW_ENGINE)
   # Load it from the app bundle only; no build-machine path in the executable.
   set_target_properties(GalaxyPad PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE
     INSTALL_RPATH "@executable_path/Frameworks")
-  # The engine reads its shader manifests from <bundle>/pipeline-seeds.
+  # The engine's shader manifests ship as one small pack; the engine expands it on
+  # its first launch (galaxypad-engine native/app/seed_pack.hpp).
   add_custom_target(GalaxyPadEngineEmbed ALL
     COMMAND "${CMAKE_COMMAND}" -E copy_directory "${ENGINE_FRAMEWORK}"
       "$<TARGET_BUNDLE_DIR:GalaxyPad>/Frameworks/GalaxyPadEngine.framework"
-    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${ENGINE_APP_BUILD}/pipeline-seeds"
-      "$<TARGET_BUNDLE_DIR:GalaxyPad>/pipeline-seeds"
+    COMMAND "${CMAKE_COMMAND}" -E copy "${ENGINE_APP_BUILD}/pipeline-seeds.xz"
+      "$<TARGET_BUNDLE_DIR:GalaxyPad>/pipeline-seeds.xz"
     DEPENDS GalaxyPad)
 endif()
 foreach(FRAMEWORK UIKit Foundation Metal MetalKit GameController CoreGraphics
