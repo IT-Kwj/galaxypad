@@ -43,3 +43,5 @@ python3 ./tests/test-zero-column.py --nonzero-dc
 python3 ./tests/test-zero-column.py --nonzero-dc --second-kernel
 python3 ./tests/test-huffman-tail.py
 python3 ./tests/test-normal-kernel-entry.py
+# New-engine game-file completion against the real image (needs the Simulator core).
+bash ./tests/test-engine-files-completion.sh
