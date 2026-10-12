@@ -877,38 +877,10 @@ static double GalaxyPadResidentMiB(void) {
 }
 - (void)gameOverlayRequestsProblemReport:(GalaxyPadGameOverlay *)overlay {
   (void)overlay;
-  // Review a GitHub draft before opening the issue tracker; logs are optional.
-  UIAlertController *prompt = [UIAlertController alertControllerWithTitle:@"Report a Problem"
-    message:@"Describe the problem without private information. Review a GitHub issue draft with app status, then optionally prepare a diagnostic log to attach. Nothing is submitted automatically."
-    preferredStyle:UIAlertControllerStyleAlert];
-  for (NSString *placeholder in @[@"What went wrong?", @"Area and what you were doing (optional)",
-                                  @"Every time, sometimes, once, or unsure?"]) {
-    [prompt addTextFieldWithConfigurationHandler:^(UITextField *field) {
-      field.placeholder = placeholder;
-      field.clearButtonMode = UITextFieldViewModeWhileEditing;
-    }];
-  }
-  [prompt addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
   __weak GalaxyPadGameViewController *weakSelf = self;
-  __weak UIAlertController *weakPrompt = prompt;
-  [prompt addAction:[UIAlertAction actionWithTitle:@"Review GitHub Report" style:UIAlertActionStyleDefault
-    handler:^(UIAlertAction *action) {
-      (void)action;
-      GalaxyPadGameViewController *view = weakSelf;
-      UIAlertController *questions = weakPrompt;
-      if (!view || questions.textFields.count != 3) return;
-      NSDictionary *answers = @{@"problem": questions.textFields[0].text ?: @"",
-        @"context": questions.textFields[1].text ?: @"", @"frequency": questions.textFields[2].text ?: @""};
-      NSString *context = [view diagnosticContext];
-      // Explicit dismissal completion avoids presenting underneath the alert.
-      [view dismissViewControllerAnimated:YES completion:^{
-        GalaxyPadReportViewController *report = [[GalaxyPadReportViewController alloc]
-          initWithReporterAnswers:answers technicalContext:context];
-        UINavigationController *navigation = [[UINavigationController alloc] initWithRootViewController:report];
-        [view presentViewController:navigation animated:YES completion:nil];
-      }];
-    }]];
-  [self presentViewController:prompt animated:YES completion:nil];
+  [GalaxyPadReportViewController presentReportPromptFrom:self technicalContext:^NSString * {
+    return [weakSelf diagnosticContext] ?: @"";
+  }];
 }
 - (void)gameOverlayRequestsControllerMapping:(GalaxyPadGameOverlay *)overlay {
   (void)overlay; [self presentControllerMapping];
@@ -1012,7 +984,8 @@ static double GalaxyPadResidentMiB(void) {
 @implementation GalaxyPadAppDelegate
 @end
 #if GALAXYPAD_NEW_ENGINE
-// GalaxyPadEngine.framework (ref/galaxypad-engine); its only exported symbol.
+#import "GalaxyPadNewEngineHost.h"
+// GalaxyPadEngine.framework (ref/galaxypad-engine): runs the app with the New engine.
 extern "C" int galaxypad_engine_main(int argc, char *argv[]);
 // Engine setting (docs/ENGINE-SWITCH-PLAN.md). The New engine runs the whole app
 // when it is selected and an imported game is installed. Otherwise GalaxyPad
@@ -1049,6 +1022,7 @@ static BOOL GalaxyPadRunSelectedEngine(int argc, char *argv[], int *status) {
     if (!GalaxyPadNewEngineArguments(argc, argv, arguments)) return NO;
     // Lets the engine's Home menu offer "Original engine..." (it writes GalaxyPadEngine).
     setenv("GALAXYPAD_ENGINE_HOST", "1", 1);
+    GalaxyPadNewEngineHostInstall();
     // The engine keeps argv for the life of the process.
     char **engineArgv = (char **)calloc(arguments.count + 1, sizeof(char *));
     for (NSUInteger i = 0; i < arguments.count; ++i) engineArgv[i] = strdup(arguments[i].fileSystemRepresentation);

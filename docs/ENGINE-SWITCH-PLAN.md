@@ -21,10 +21,13 @@ pinned at `ref/galaxypad-engine`. It also runs as a separate test app
   engine's Home menu has the same switch.
 - **Original** stays exactly as it is, and stays the default until the owner
   has played the New engine and approves the change.
-- **New** is everything from Galaxy Native: 60 FPS on the iPhone 14, Smooth
-  Motion at 120 FPS on ProMotion iPads, lower input latency, the touch controls
-  with an exact Star Pointer and two-finger camera, the native Home menu with Mods,
-  and a one-time shader preparation screen.
+- **New** is the Galaxy Native engine: 60 FPS on the iPhone 14, Smooth Motion at
+  120 FPS on ProMotion iPads, lower input latency, and a one-time shader
+  preparation screen. It looks and plays like GalaxyPad: GalaxyPad's own touch
+  controls (with their layout settings, gyro cursor and Touch Control Guide) and
+  three-dot menu sit over the game, and the engine's own touch controls stay off.
+  The menu lists what works with the New engine: Engine, Controls, Report a
+  Problem and About.
 - GalaxyPad's import flow, icon, About and report screens stay GalaxyPad's.
 
 ## How it fits together
@@ -131,7 +134,8 @@ Approved by the owner on 12 October 2026 ("proceed with this plan"):
   Next: step 2, both engines in one app.
 - **12 October 2026:** step 2, both engines in one app (PR "Build the New engine
   into GalaxyPad"). The engine (`galaxypad-engine` `e018bebb`) builds
-  `GalaxyPadEngine.framework`: one exported symbol, `galaxypad_engine_main`,
+  `GalaxyPadEngine.framework`: one exported symbol, `galaxypad_engine_main`
+  (later also the four functions GalaxyPad's controls call),
   which starts the game through `SDL_RunApp`. GalaxyPad's executable defines 15 SDL
   Objective-C classes of its own (the Original engine's SDL), and Objective-C class
   names are process-wide, so the engine's build renames all 40 classes SDL
@@ -273,3 +277,46 @@ Approved by the owner on 12 October 2026 ("proceed with this plan"):
   iPad Air Simulator, after switching back with real taps: the Original engine
   loads the save that came back from the New engine (file 1, 0 stars) and plays
   its prologue.
+- **12 October 2026:** first device run of the switch. iPad Pro 12.9-inch (6th
+  generation), iPadOS 27.0.1, build 7213 (`main` `41b9c67`, engine `312efcce`,
+  fresh unprofiled Original module), installed in place over Preview 4 (7168) with
+  the same signing identity. The 41 save, setting and preference files were backed
+  up and read back identically, then unchanged after the install.
+  - Original engine: runs at about 59-60 FPS.
+  - Engine menu, New (test switch): 3.2 GB of game files added to the older
+    install's folder, marker written, setting saved.
+  - New engine: seed pack expanded on first launch, save copied in
+    (`7e394e41`, as in the Simulators; Wii save unchanged, `cd8d1fa9`), shader
+    preparation at about 19 per second until "Tap to start now", then in the
+    background; the galaxy route by touch passed unattended.
+  - Still to do on the iPad: the switch back to Original and the save check
+    after it. The iPhone 14 still has build 7212.
+- **13 October 2026:** the New engine looks like GalaxyPad. The owner saw the
+  engine's own controls and Home button instead of GalaxyPad's, so GalaxyPad now
+  draws its own controls and three-dot menu over the New engine
+  (`apple/ios/GalaxyPadNewEngineHost.mm`), in a window of its own above the
+  engine's (the engine's root view is a Metal view, which draws over subviews,
+  and menus need a view controller). The engine (`galaxypad-engine`
+  `1cda557c`) turns its own touch controls off and exports four more functions:
+  input (buttons, stick, pointer), the game image rectangle, "game started" (the
+  controls appear after shader preparation, so its "Tap to start" still works),
+  and switch to Original (the game closes like Quit, then the save is copied out
+  and the setting saved). GalaxyPad's A presses the engine's Start, which is A
+  and adds B while the title asks for both, so one tap starts the game. On iOS the
+  engine shows tap hints, never keyboard ones. Checked with real taps in the iPad
+  Air Simulator: A starts the game from the title, a tap puts the Star Pointer
+  under the finger and picks file 1, the three-dot menu opens, and Engine →
+  Original → Switch closes the game, saves the setting, and the Original engine
+  opens next with its full menu. The iPhone 18 Pro Simulator shows the same
+  controls and menu over the 16:9 New engine. The engine's 92 Mac tests pass. In
+  the Simulator the Mac's mouse also reaches the engine as a mouse (Game
+  Controller), which shows a second "P2" star; a device without a mouse has none.
+  - iPad Pro 12.9-inch (6th generation), iPadOS 27.0.1, build 7214 (this change,
+    engine `1cda557c`), installed in place over 7213 with the same signing
+    identity; the 66 save, setting and preference files were backed up and read
+    back identically, and the saves (Wii `cd8d1fa9`, New `7e394e41`) were
+    unchanged after the install. The New engine opens with GalaxyPad's controls and
+    three-dot menu over the game and none of its own; the app's log records the
+    controls attached and shown after shader preparation. Taps sent from the Mac
+    do not reach the physical iPad, so playing with them and the switch back are
+    for the owner's hands.
