@@ -27,7 +27,7 @@ framework="$build/native/app/GalaxyPadEngine.framework"
 # The entry point and the functions GalaxyPad's controls and menu call
 # (apple/ios/GalaxyPadNewEngineHost.mm); nothing else.
 exported="$(nm -gU "$framework/GalaxyPadEngine" | awk '{print $3}' | sort | tr '\n' ' ')"
-expected="_galaxypad_engine_image _galaxypad_engine_input _galaxypad_engine_main _galaxypad_engine_started _galaxypad_engine_switch_to_original "
+expected="_galaxypad_engine_image _galaxypad_engine_input _galaxypad_engine_main _galaxypad_engine_pause _galaxypad_engine_presented_frames _galaxypad_engine_quit _galaxypad_engine_set_volume _galaxypad_engine_smooth_motion _galaxypad_engine_started _galaxypad_engine_switch_to_original _galaxypad_engine_widescreen "
 if [[ "$exported" != "$expected" ]]; then
   echo "GalaxyPadEngine must export only: $expected; found:" >&2
   echo "$exported" >&2

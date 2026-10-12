@@ -25,9 +25,9 @@ pinned at `ref/galaxypad-engine`. It also runs as a separate test app
   120 FPS on ProMotion iPads, lower input latency, and a one-time shader
   preparation screen. It looks and plays like GalaxyPad: GalaxyPad's own touch
   controls (with their layout settings, gyro cursor and Touch Control Guide) and
-  three-dot menu sit over the game, and the engine's own touch controls stay off.
-  The menu lists what works with the New engine: Engine, Controls, Report a
-  Problem and About.
+  three-dot menu sit over the game, game controllers go through GalaxyPad's own
+  mapping, and the engine's own touch controls stay off. The menu is GalaxyPad's
+  full menu; the menu calls the engines "New Engine" and "Old Engine".
 - GalaxyPad's import flow, icon, About and report screens stay GalaxyPad's.
 
 ## How it fits together
@@ -320,3 +320,33 @@ Approved by the owner on 12 October 2026 ("proceed with this plan"):
     controls attached and shown after shader preparation. Taps sent from the Mac
     do not reach the physical iPad, so playing with them and the switch back are
     for the owner's hands.
+- **13 October 2026:** the owner's first play on the iPad: "the game looks and plays
+  awesome", but the right stick kept bringing the cursor back to the centre, and the
+  three-dot menu was missing Display and other items. Fixed (engine \`580b80c0\`):
+  - Controllers now go through GalaxyPad's own adapter, mapping and cursor, as in the
+    Old engine; the engine ignores SDL's gamepad events (\`PETARI_SDL_GAMEPADS=0\`).
+    The cause: the engine's right stick took over the Star Pointer from the centre
+    whenever no mouse position (GalaxyPad's touch pointer) had placed it.
+  - The full menu is back over the New engine, each item working: Engine (New
+    Engine / Old Engine); Display with Smooth Motion (120 FPS, on by default on
+    ProMotion screens, off and greyed on 60 Hz ones), Render Resolution (automatic,
+    2x-4x; next launch), Aspect Ratio (4:3 / 16:9, the game's own setting; restart),
+    FPS counter and performance logging; all of Controls, including Controller
+    Button Mapping (Stick Mode shows "Automatic": the engine steers balls and rays
+    from the stick); Audio (volume and mute); Game Data & Saves (status here;
+    importing or removing offers to switch to the Old engine, which owns the import
+    flow); Share Diagnostic Log; Report a Problem; About (now crediting MacioGalaxy,
+    Petari and Aurora); Stop Game (closes GalaxyPad).
+  - GalaxyPad's pause screen (controller View), touch settings, alerts and sheets
+    now hold the game, silent, as over the Old engine; so does leaving the app.
+  - Checked: engine Mac tests 92/92; GalaxyPad's checks pass apart from the local
+    host-pressure probe; in the iPad Air Simulator the New engine opens with the
+    full menu. The Simulator's window stopped taking clicks partway, so the Display
+    submenu, pause and controller were not tapped through there.
+  - iPad Pro 12.9-inch (6th generation), iPadOS 27.0.1, build 7215: installed in
+    place over 7214 with the same signing identity after a backup that read back
+    identically; saves unchanged (Wii \`cd8d1fa9\`, New \`7e394e41\`), game image and
+    files untouched. The owner had switched the iPad to the Old engine with the menu
+    on 7214; the test hook selected New again, and 7215 opens the New engine with
+    GalaxyPad's controls (app log). The right stick and the menu items need the
+    owner's hands on the iPad.

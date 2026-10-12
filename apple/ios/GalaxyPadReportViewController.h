@@ -9,5 +9,7 @@
 - (instancetype)initWithReportURL:(NSURL *)url;
 // "Report a Problem": three short questions, then the GitHub draft review.
 // context is read when the user continues.
+// Shows a saved diagnostic report for review, or says it could not be saved.
++ (void)presentReportURL:(NSURL *)url from:(UIViewController *)presenter;
 + (void)presentReportPromptFrom:(UIViewController *)presenter technicalContext:(NSString *(^)(void))context;
 @end

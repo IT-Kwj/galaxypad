@@ -1,6 +1,30 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #import "GalaxyPadAboutViewController.h"
+#include "GalaxyPadDiscIdentity.h"
 @implementation GalaxyPadAboutViewController
++ (UIAlertController *)gameDataStatusAlert {
+  NSURL *support=[NSFileManager.defaultManager URLsForDirectory:NSApplicationSupportDirectory
+    inDomains:NSUserDomainMask].firstObject;
+  NSURL *root=[support URLByAppendingPathComponent:@"GalaxyPad" isDirectory:YES];
+  NSFileManager *files=NSFileManager.defaultManager;
+  BOOL image=[files fileExistsAtPath:[root URLByAppendingPathComponent:@"GameData/RMGE01.wbfs"].path];
+  BOOL save=[files fileExistsAtPath:[root URLByAppendingPathComponent:@"Wii/title/00010000/524d4745/data/GameData.bin"].path];
+  BOOL newFiles=[files fileExistsAtPath:[root URLByAppendingPathComponent:@"GameData/RMGE01/.galaxypad-files-complete"].path];
+  BOOL newSave=[files fileExistsAtPath:[root URLByAppendingPathComponent:@"NewEngine/NAND/title/00010000/524d4745/data/GameData.bin"].path];
+  NSString *message=[NSString stringWithFormat:
+    @"Supported: Super Mario Galaxy\nRMGE01 · revision 0\n\n"
+     "Imported image: %@\nNew engine game files: %@\n"
+     "Old engine save: %@\nNew engine save: %@\n\n"
+     "Both engines keep the same progress: switching engines copies the save across.\n\n"
+     "Expected main.dol SHA-256:\n%@\n\n"
+     "File presence only. Integrity and saved progress are not checked here.",
+    image ? @"Detected" : @"Not detected", newFiles ? @"Complete" : @"Not added yet",
+    save ? @"Detected" : @"Not detected", newSave ? @"Detected" : @"Not detected", @(GalaxyPadDOLSHA256)];
+  UIAlertController *alert=[UIAlertController alertControllerWithTitle:@"Game Data & Saves"
+    message:message preferredStyle:UIAlertControllerStyleAlert];
+  [alert addAction:[UIAlertAction actionWithTitle:@"Done" style:UIAlertActionStyleCancel handler:nil]];
+  return alert;
+}
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.title=@"About GalaxyPad";
@@ -18,7 +42,11 @@
   text.text=[NSString stringWithFormat:
     @"GalaxyPad %@ (%@)\nExperimental preview\n\n"
     "Compatibility\nSuper Mario Galaxy — RMGE01, revision 0. Gameplay, performance and device validation are still in progress.\n\n"
-    "Built on upstream work\nModernGekko — runtime integration and game-port tooling.\n"
+    "Engines\nNew engine — the game's own code, rebuilt to run natively on iPhone and iPad (60 FPS, 120 with Smooth Motion on ProMotion screens). Old engine — the original Wii program, recompiled ahead of time. Choose one in the menu under Engine.\n\n"
+    "Built on upstream work\nMacioGalaxy — the native port the New engine is based on.\n"
+    "Petari — the Super Mario Galaxy decompilation MacioGalaxy builds.\n"
+    "Aurora — Metal rendering for the New engine.\n"
+    "ModernGekko — runtime integration and game-port tooling.\n"
     "DolRecomp — ahead-of-time PowerPC code generation.\n"
     "RecompCore — Dolphin-derived recompilation runtime.\n"
     "Dolphin — Wii hardware, graphics, audio and input.\n"
@@ -38,6 +66,9 @@
     @"RecompCore":@"https://github.com/ExpansionPak/RecompCore",
     @"Dolphin —":@"https://github.com/dolphin-emu/dolphin",
     @"SunPad":@"https://github.com/chrissotraidis/sunpad",
+    @"MacioGalaxy —":@"https://github.com/classicrob/MacioGalaxy",
+    @"Petari —":@"https://github.com/SMGCommunity/Petari",
+    @"Aurora —":@"https://github.com/encounter/aurora",
     @"Wiimms ISO Tools":@"https://wit.wiimm.de/",
     @"Credits and artwork provenance":@"https://github.com/chrissotraidis/galaxypad/blob/main/CREDITS.md",
     @"Third-party notices":@"https://github.com/chrissotraidis/galaxypad/blob/main/THIRD-PARTY-NOTICES.md"
