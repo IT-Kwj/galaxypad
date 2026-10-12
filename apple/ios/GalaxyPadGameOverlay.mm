@@ -716,10 +716,20 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
     UIAction *action = [UIAction actionWithTitle:title image:nil identifier:nil
                                          handler:^(__kindof UIAction *selected) {
         (void)selected;
+        GalaxyPadGameOverlay *overlay = weakSelf;
+        if (!overlay || [GalaxyPadSettings sharedSettings].engine == engine) return;
+        void (^chosen)(BOOL) = ^(BOOL ok) {
+            if (ok) [[[UISelectionFeedbackGenerator alloc] init] selectionChanged];
+            [weakSelf refreshMenuButton];
+        };
+        if (engine == GalaxyPadEngineNew &&
+            [overlay.delegate respondsToSelector:@selector(gameOverlayRequestsNewEngine:completion:)]) {
+            [overlay.delegate gameOverlayRequestsNewEngine:overlay completion:chosen];
+            return;
+        }
         [GalaxyPadSettings sharedSettings].engine = engine;
         [[GalaxyPadSettings sharedSettings] synchronize];
-        [[[UISelectionFeedbackGenerator alloc] init] selectionChanged];
-        [weakSelf refreshMenuButton];
+        chosen(YES);
     }];
     action.state = [GalaxyPadSettings sharedSettings].engine == engine ?
         UIMenuElementStateOn : UIMenuElementStateOff;
