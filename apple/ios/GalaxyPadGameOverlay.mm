@@ -467,7 +467,11 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
       }];
     loggingAction.state = [NSUserDefaults.standardUserDefaults boolForKey:@"GalaxyPadLogFrameRateWindows"]
       ? UIMenuElementStateOn : UIMenuElementStateOff;
-    displayMenu = [displayMenu menuByReplacingChildren:@[renderMenu, aspectMenu, fpsAction, loggingAction]];
+    NSArray<UIMenuElement *> *engineDisplay = @[renderMenu, aspectMenu];
+    if ([self.delegate respondsToSelector:@selector(gameOverlayDisplayItems:)])
+        engineDisplay = [self.delegate gameOverlayDisplayItems:self];
+    displayMenu = [displayMenu menuByReplacingChildren:
+        [engineDisplay arrayByAddingObjectsFromArray:@[fpsAction, loggingAction]]];
 
     UIAction *reportProblemAction =
         [UIAction actionWithTitle:@"Report a Problem…"
@@ -533,7 +537,15 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
         choice.state=_rideTiltMode==mode ? UIMenuElementStateOn : UIMenuElementStateOff;
         [rideModes addObject:choice];
     }
-    UIMenu *rideMenu=[UIMenu menuWithTitle:@"Stick Mode (Touch / Controller)" children:rideModes];
+    UIMenuElement *rideMenu=[UIMenu menuWithTitle:@"Stick Mode (Touch / Controller)" children:rideModes];
+    if (_hostedByNewEngine) {
+        // The New engine sees when the game steers by tilt and turns the stick into it.
+        UIAction *automatic=[UIAction actionWithTitle:@"Stick Mode: Automatic" image:nil identifier:nil
+          handler:^(__kindof UIAction *action) { (void)action; }];
+        automatic.subtitle=@"The stick steers the Star Ball and Ray by itself";
+        automatic.attributes=UIMenuElementAttributesDisabled;
+        rideMenu=automatic;
+    }
     UIMenu *gyroMenu=[self gyroMenu];
     UIMenu *controlsMenu = [UIMenu menuWithTitle:@"Controls"
                                            image:[UIImage systemImageNamed:@"gamecontroller"]
@@ -561,14 +573,6 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
         }],
         gyroMenu, rideMenu, touchAction, tiltAction, tiltResponse, auxiliaryAction,
     ]];
-    if (_hostedByNewEngine) {
-        // The New engine reads controllers itself and steers balls and rays from
-        // the stick, so controller mapping and stick modes belong to the Original.
-        NSMutableArray<UIMenuElement *> *controls = [controlsMenu.children mutableCopy];
-        [controls removeObject:rideMenu];
-        [controls removeObjectAtIndex:0];
-        controlsMenu = [controlsMenu menuByReplacingChildren:controls];
-    }
 
     // These host adapters are not delivered yet. Do not present inert actions
     // as working, or accidentally route Galaxy reports/data to SunPad.
@@ -591,10 +595,9 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
     NSMutableArray<UIMenuElement *> *dataItems = [dataMenu.children mutableCopy];
     [dataItems insertObject:dataStatus atIndex:0];
     dataMenu = [dataMenu menuByReplacingChildren:dataItems];
-    if (!_hostedByNewEngine)
-      ((UIAction *)controlsMenu.children.firstObject).attributes =
-        [self.delegate respondsToSelector:@selector(gameOverlayRequestsControllerMapping:)]
-          ? 0 : UIMenuElementAttributesDisabled;
+    ((UIAction *)controlsMenu.children.firstObject).attributes =
+      [self.delegate respondsToSelector:@selector(gameOverlayRequestsControllerMapping:)]
+        ? 0 : UIMenuElementAttributesDisabled;
     reportProblemAction.attributes = self.delegate ? 0 : UIMenuElementAttributesDisabled;
     UIAction *shareLog=[UIAction actionWithTitle:@"Share Diagnostic Log"
       image:[UIImage systemImageNamed:@"square.and.arrow.up"] identifier:nil
@@ -632,8 +635,6 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
         about,
         stopAction,
     ] mutableCopy];
-    if (_hostedByNewEngine)
-        menuItems = [@[controlsMenu, reportProblemAction, about] mutableCopy];
 #if GALAXYPAD_NEW_ENGINE
     // docs/ENGINE-SWITCH-PLAN.md: the engine runs the whole app, so the choice
     // applies when GalaxyPad is opened again.
@@ -642,8 +643,8 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
                                        identifier:@"galaxypad.menu.engine"
                                           options:0
                                          children:@[
-        [self engineAction:@"Original" engine:GalaxyPadEngineOriginal],
-        [self engineAction:@"New (60 FPS, 120 on ProMotion)" engine:GalaxyPadEngineNew],
+        [self engineAction:@"New Engine (60 FPS, 120 with Smooth Motion)" engine:GalaxyPadEngineNew],
+        [self engineAction:@"Old Engine" engine:GalaxyPadEngineOriginal],
     ]] atIndex:0];
 #endif
 #if TARGET_OS_SIMULATOR
@@ -739,8 +740,8 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
             return;
         }
         if (engine == GalaxyPadEngineOriginal &&
-            [overlay.delegate respondsToSelector:@selector(gameOverlayRequestsOriginalEngine:)]) {
-            [overlay.delegate gameOverlayRequestsOriginalEngine:overlay];
+            [overlay.delegate respondsToSelector:@selector(gameOverlayRequestsOldEngine:)]) {
+            [overlay.delegate gameOverlayRequestsOldEngine:overlay];
             return;
         }
         [GalaxyPadSettings sharedSettings].engine = engine;
@@ -2040,7 +2041,8 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
 
 - (void)confirmStop {
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Stop Game?"
-      message:@"Unsaved progress will be lost. Existing saves will be kept."
+      message:_hostedByNewEngine ? @"GalaxyPad closes. Unsaved progress will be lost; existing saves are kept."
+                                 : @"Unsaved progress will be lost. Existing saves will be kept."
       preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
     __weak GalaxyPadGameOverlay *weakSelf = self;

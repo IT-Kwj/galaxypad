@@ -18,6 +18,20 @@
   if ((self = [super init])) _reportURL = url;
   return self;
 }
++ (void)presentReportURL:(NSURL *)url from:(UIViewController *)presenter {
+  if (url) {
+    GalaxyPadReportViewController *report=[[GalaxyPadReportViewController alloc] initWithReportURL:url];
+    UINavigationController *navigation=[[UINavigationController alloc] initWithRootViewController:report];
+    navigation.modalPresentationStyle=UIModalPresentationPageSheet;
+    [presenter presentViewController:navigation animated:YES completion:nil];
+  } else {
+    UIAlertController *failure=[UIAlertController alertControllerWithTitle:@"Report Unavailable"
+      message:@"The local report could not be saved. Check available storage and try again."
+      preferredStyle:UIAlertControllerStyleAlert];
+    [failure addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
+    [presenter presentViewController:failure animated:YES completion:nil];
+  }
+}
 + (void)presentReportPromptFrom:(UIViewController *)presenter technicalContext:(NSString *(^)(void))context {
   // Review a GitHub draft before opening the issue tracker; logs are optional.
   UIAlertController *prompt = [UIAlertController alertControllerWithTitle:@"Report a Problem"

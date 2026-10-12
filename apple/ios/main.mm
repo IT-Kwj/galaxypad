@@ -9,6 +9,7 @@
 #import "GalaxyPadReportViewController.h"
 #import "GalaxyPadAboutViewController.h"
 #import "GalaxyPadControllers.h"
+#import "GalaxyPadControllerMappingPrompt.h"
 #import "GalaxyPadGyroPointer.h"
 #import "GalaxyPadImportTransaction.h"
 #import "GalaxyPadDiscExtractor.h"
@@ -612,20 +613,7 @@ static double GalaxyPadResidentMiB(void) {
 }
 - (void)gameOverlayRequestsGameDataStatus:(GalaxyPadGameOverlay *)overlay {
   (void)overlay;
-  NSURL *root=[self gameDataSupportURL];
-  NSFileManager *files=NSFileManager.defaultManager;
-  BOOL image=[files fileExistsAtPath:[root URLByAppendingPathComponent:@"GameData/RMGE01.wbfs"].path];
-  BOOL save=[files fileExistsAtPath:[root URLByAppendingPathComponent:@"Wii/title/00010000/524d4745/data/GameData.bin"].path];
-  NSString *message=[NSString stringWithFormat:
-    @"Supported: Super Mario Galaxy\nRMGE01 · revision 0\n\n"
-     "Imported image: %@\nWii save file: %@\n\n"
-     "Expected main.dol SHA-256:\n%@\n\n"
-     "File presence only. Integrity and saved progress are not checked here.",
-    image ? @"Detected" : @"Not detected", save ? @"Detected" : @"Not detected", @(GalaxyPadDOLSHA256)];
-  UIAlertController *alert=[UIAlertController alertControllerWithTitle:@"Game Data & Saves"
-    message:message preferredStyle:UIAlertControllerStyleAlert];
-  [alert addAction:[UIAlertAction actionWithTitle:@"Done" style:UIAlertActionStyleCancel handler:nil]];
-  [self presentViewController:alert animated:YES completion:nil];
+  [self presentViewController:[GalaxyPadAboutViewController gameDataStatusAlert] animated:YES completion:nil];
 }
 - (void)gameOverlayRequestsNewEngine:(GalaxyPadGameOverlay *)overlay completion:(void (^)(BOOL))completion {
   (void)overlay;
@@ -840,18 +828,7 @@ static double GalaxyPadResidentMiB(void) {
     (unsigned long long)audio.lastUnderrunEnqueue];
 }
 - (void)presentDiagnosticReportURL:(NSURL *)url {
-  if (url) {
-    GalaxyPadReportViewController *report=[[GalaxyPadReportViewController alloc] initWithReportURL:url];
-    UINavigationController *navigation=[[UINavigationController alloc] initWithRootViewController:report];
-    navigation.modalPresentationStyle=UIModalPresentationPageSheet;
-    [self presentViewController:navigation animated:YES completion:nil];
-  } else {
-    UIAlertController *failure=[UIAlertController alertControllerWithTitle:@"Report Unavailable"
-      message:@"The local report could not be saved. Check available storage and try again."
-      preferredStyle:UIAlertControllerStyleAlert];
-    [failure addAction:[UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil]];
-    [self presentViewController:failure animated:YES completion:nil];
-  }
+  [GalaxyPadReportViewController presentReportURL:url from:self];
 }
 - (void)gameOverlayRequestsDiagnosticLog:(GalaxyPadGameOverlay *)overlay {
   (void)overlay;
@@ -883,61 +860,12 @@ static double GalaxyPadResidentMiB(void) {
   }];
 }
 - (void)gameOverlayRequestsControllerMapping:(GalaxyPadGameOverlay *)overlay {
-  (void)overlay; [self presentControllerMapping];
-}
-- (void)presentControllerMapping {
-  // SunPad's assignment-list/physical-choice flow, with Galaxy's action set.
-  const auto mapping=GalaxyPadControllerMappingStore.mapping;
-  NSArray *games=@[@"A", @"B", @"Spin", @"C", @"Z"];
-  NSArray *physical=@[@"A", @"B", @"X", @"Y", @"Left Trigger"];
-  UIAlertController *alert=[UIAlertController alertControllerWithTitle:@"Controller Button Mapping"
-    message:@"Assignments swap to keep every action reachable. Left stick moves; right stick aims; click right stick to recenter. Choose Controls → Stick Mode for Ray Surfing or Star Ball: left stick tilts, with the correct remote pose. Return to Normal for walking and aiming. Hold Left Shoulder for optional right-stick tilt. Right Shoulder is also A; Right Trigger is also B, so you can aim while using either action. Menu/Start or the on-screen + opens Galaxy’s original pause menu, including Return to Observatory when available. View/Select toggles app pause; press it again to resume. D-pad controls the camera. Connect a controller to test."
-    preferredStyle:UIAlertControllerStyleAlert];
+  (void)overlay;
   __weak GalaxyPadGameViewController *weakSelf=self;
-  for (unsigned i=0;i<5;++i) {
-    [alert addAction:[UIAlertAction actionWithTitle:[NSString stringWithFormat:@"%@ — %@",games[i],physical[mapping.physical[i]]]
-      style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-        (void)action;
-        [weakSelf dismissViewControllerAnimated:YES completion:^{ [weakSelf presentControllerChoices:i]; }];
-      }]];
-  }
-  [alert addAction:[UIAlertAction actionWithTitle:@"Reset to Default" style:UIAlertActionStyleDestructive
-    handler:^(UIAlertAction *action) {
-      (void)action;
-      GalaxyPadGameViewController *view=weakSelf;
-      if (!view) return;
-      [GalaxyPadControllerMappingStore reset];
-      [view->_controllers reloadMapping]; [view->_host clearInput];
-      [view dismissViewControllerAnimated:YES completion:^{ [view presentControllerMapping]; }];
-    }]];
-  [alert addAction:[UIAlertAction actionWithTitle:@"Done" style:UIAlertActionStyleCancel handler:nil]];
-  [self presentViewController:alert animated:YES completion:nil];
-}
-- (void)presentControllerChoices:(unsigned)game {
-  if (game>=5) return;
-  NSArray *games=@[@"A", @"B", @"Spin", @"C", @"Z"];
-  NSArray *physical=@[@"A", @"B", @"X", @"Y", @"Left Trigger"];
-  UIAlertController *alert=[UIAlertController alertControllerWithTitle:games[game]
-    message:@"Choose a physical button. Its existing assignment swaps with this one."
-    preferredStyle:UIAlertControllerStyleAlert];
-  __weak GalaxyPadGameViewController *weakSelf=self;
-  for (unsigned i=0;i<5;++i) {
-    [alert addAction:[UIAlertAction actionWithTitle:physical[i] style:UIAlertActionStyleDefault
-      handler:^(UIAlertAction *action) {
-        (void)action;
-        GalaxyPadGameViewController *view=weakSelf;
-        if (!view) return;
-        [GalaxyPadControllerMappingStore setMapping:GalaxyPadControllerMappingStore.mapping.assigning(game,i)];
-        [view->_controllers reloadMapping]; [view->_host clearInput];
-        [view dismissViewControllerAnimated:YES completion:^{ [view presentControllerMapping]; }];
-      }]];
-  }
-  [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel
-    handler:^(UIAlertAction *action) {
-      (void)action;
-      [weakSelf dismissViewControllerAnimated:YES completion:^{ [weakSelf presentControllerMapping]; }];
-    }]];
-  [self presentViewController:alert animated:YES completion:nil];
+  GalaxyPadPresentControllerMapping(self, ^{
+    GalaxyPadGameViewController *view=weakSelf;
+    if (view) { [view->_controllers reloadMapping]; [view->_host clearInput]; }
+  });
 }
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations { return UIInterfaceOrientationMaskLandscape; }
 - (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation { return UIInterfaceOrientationLandscapeLeft; }

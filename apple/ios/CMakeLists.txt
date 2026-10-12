@@ -24,7 +24,7 @@ configure_file(../shared/GalaxyPadDiscIdentity.h.in GalaxyPadDiscIdentity.h @ONL
 add_executable(GalaxyPad MACOSX_BUNDLE main.mm GalaxyPadCoreHost.mm GalaxyPadMetalView.mm
   ../shared/GalaxyPadInputDevice.cpp GalaxyPadGameOverlay.mm ../shared/GalaxyPadSettings.mm
   ../shared/GalaxyPadDiagnostics.mm GalaxyPadReportViewController.mm GalaxyPadAboutViewController.mm GalaxyPadControllers.mm GalaxyPadGyroPointer.mm
-  ../shared/GalaxyPadControllerMappingStore.mm GalaxyPadDiscExtractor.mm GalaxyPadImportTransaction.mm)
+  ../shared/GalaxyPadControllerMappingStore.mm GalaxyPadControllerMappingPrompt.mm GalaxyPadDiscExtractor.mm GalaxyPadImportTransaction.mm)
 option(GALAXYPAD_ENABLE_NATIVE_THP "Compile private opt-in native THP candidate" OFF)
 if(GALAXYPAD_ENABLE_NATIVE_THP)
   if(NOT GALAXYPAD_SDK STREQUAL "iphonesimulator")

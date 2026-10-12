@@ -17,8 +17,11 @@
 - (void)gameOverlayRequestsDevelopmentCheckpointRestore:(GalaxyPadGameOverlay *)overlay;
 // Prepares what the New engine needs, then selects it; completion reports whether it did.
 - (void)gameOverlayRequestsNewEngine:(GalaxyPadGameOverlay *)overlay completion:(void (^)(BOOL selected))completion;
-// Over the New engine: switches back to the Original engine (the game closes).
-- (void)gameOverlayRequestsOriginalEngine:(GalaxyPadGameOverlay *)overlay;
+// Over the New engine: switches to the Old engine (the game closes).
+- (void)gameOverlayRequestsOldEngine:(GalaxyPadGameOverlay *)overlay;
+// Over the New engine: its own Render Resolution, Aspect Ratio and Smooth Motion
+// items, in place of the Old engine's.
+- (NSArray<UIMenuElement *> *)gameOverlayDisplayItems:(GalaxyPadGameOverlay *)overlay;
 @required
 - (void)gameOverlayRequestsProblemReport:(GalaxyPadGameOverlay *)overlay;
 @end
@@ -36,9 +39,10 @@
 @property(nonatomic, readonly) BOOL blocksGameplay;
 @property(nonatomic, readonly) BOOL nativeMenuVisible;
 @property(nonatomic) BOOL gameplayAvailable;
-// Over the New engine (GalaxyPadNewEngineHost): the menu lists only what works
-// there, without the Original engine's display, audio, game-data and stop items.
+// Over the New engine (GalaxyPadNewEngineHost): Stop Game closes GalaxyPad.
 @property(nonatomic) BOOL hostedByNewEngine;
+// Rebuilds the three-dot menu (after a setting it shows has changed).
+- (void)refreshMenuButton;
 - (void)setTouchControlsHidden:(BOOL)hidden animated:(BOOL)animated;
 - (void)refreshControllerVisibility;
 - (void)presentNativePause;

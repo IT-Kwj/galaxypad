@@ -1,10 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #import "GalaxyPadNewEngineHost.h"
 #import "GalaxyPadGameOverlay.h"
+#import "GalaxyPadControllers.h"
+#import "GalaxyPadControllerMappingPrompt.h"
 #import "GalaxyPadGyroPointer.h"
 #import "GalaxyPadAboutViewController.h"
 #import "GalaxyPadReportViewController.h"
 #import "../shared/GalaxyPadDiagnostics.h"
+#import "../shared/GalaxyPadSettings.h"
+#import <GameController/GameController.h>
+#import <QuartzCore/QuartzCore.h>
 #include "../shared/GalaxyPadInput.h"
 #include <cmath>
 #include <stdlib.h>
@@ -15,12 +20,22 @@ extern "C" void galaxypad_engine_input(uint32_t buttons, float stickX, float sti
 extern "C" int galaxypad_engine_image(float *x, float *y, float *width, float *height);
 extern "C" int galaxypad_engine_started(void);
 extern "C" void galaxypad_engine_switch_to_original(void);
+extern "C" void galaxypad_engine_quit(void);
+extern "C" void galaxypad_engine_pause(int paused);
+extern "C" void galaxypad_engine_set_volume(float volume);
+extern "C" int galaxypad_engine_widescreen(int value);
+extern "C" int galaxypad_engine_smooth_motion(int value);
+extern "C" uint64_t galaxypad_engine_presented_frames(void);
+
+// Render Resolution for the New engine: 0 is automatic (the screen's pixels, or
+// 3x with Smooth Motion), otherwise that many times the game's own image.
+static NSString *const GalaxyPadNewEngineRenderScaleKey = @"GalaxyPadNewEngineRenderScale";
 
 @interface GalaxyPadNewEngineHost : NSObject <GalaxyPadGameOverlayDelegate>
 @end
 
 // The overlay's own view controller, in a window above the engine's: menus and
-// alerts present from it as they do over the Original engine.
+// alerts present from it as they do over the Old engine.
 @interface GalaxyPadNewEngineControlsController : UIViewController
 @end
 @implementation GalaxyPadNewEngineControlsController
@@ -31,19 +46,28 @@ extern "C" void galaxypad_engine_switch_to_original(void);
 
 @implementation GalaxyPadNewEngineHost {
   GalaxyPadGameOverlay *_overlay;
+  GalaxyPadControllers *_controllers;
   GalaxyPadGyroPointer *_gyro;
   galaxypad::InputMixer _mixer;
   UIWindow *_controlsWindow;
+  UILabel *_fpsLabel;
   NSTimer *_timer;
   CGRect _image;
   BOOL _started;
   BOOL _active;
   BOOL _blocked;
+  BOOL _paused;
+  float _volume;
+  BOOL _logFrameRateWindows;
+  CFTimeInterval _fpsTime, _windowTime;
+  uint64_t _fpsFrames, _windowFrames;
 }
 
 - (instancetype)init {
   if ((self = [super init])) {
     _active = YES;
+    _volume = -1;
+    _logFrameRateWindows = [NSUserDefaults.standardUserDefaults boolForKey:@"GalaxyPadLogFrameRateWindows"];
     NSNotificationCenter *center = NSNotificationCenter.defaultCenter;
     [center addObserver:self selector:@selector(windowBecameKey:) name:UIWindowDidBecomeKeyNotification object:nil];
     [center addObserver:self selector:@selector(becameActive) name:UIApplicationDidBecomeActiveNotification object:nil];
@@ -59,6 +83,12 @@ extern "C" void galaxypad_engine_switch_to_original(void);
 - (void)windowBecameKey:(NSNotification *)note {
   UIWindow *window = note.object;
   if (_overlay || !window.windowScene) return;
+  // Smooth Motion starts on for ProMotion screens, once; the menu changes it.
+  NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
+  if (![defaults boolForKey:@"GalaxyPadSmoothMotionDefaultApplied"]) {
+    if (window.screen.maximumFramesPerSecond >= 120) galaxypad_engine_smooth_motion(1);
+    [defaults setBool:YES forKey:@"GalaxyPadSmoothMotionDefaultApplied"];
+  }
   GalaxyPadNewEngineControlsController *controller = [GalaxyPadNewEngineControlsController new];
   _controlsWindow = [[UIWindow alloc] initWithWindowScene:window.windowScene];
   _controlsWindow.windowLevel = window.windowLevel + 1;
@@ -73,7 +103,20 @@ extern "C" void galaxypad_engine_switch_to_original(void);
   _overlay.gameplayAvailable = NO;
   [_overlay applySettings];
   [controller.view addSubview:_overlay];
+  // The FPS counter, as over the Old engine (Display, Show FPS Counter).
+  _fpsLabel = [[UILabel alloc] initWithFrame:CGRectMake(12, 12, 180, 28)];
+  _fpsLabel.font = [UIFont monospacedDigitSystemFontOfSize:12 weight:UIFontWeightMedium];
+  _fpsLabel.textAlignment = NSTextAlignmentCenter;
+  _fpsLabel.layer.cornerRadius = 12;
+  _fpsLabel.clipsToBounds = YES;
+  _fpsLabel.textColor = UIColor.whiteColor;
+  _fpsLabel.backgroundColor = [UIColor colorWithWhite:0 alpha:0.65];
+  _fpsLabel.userInteractionEnabled = NO;
+  _fpsLabel.hidden = YES;
+  [controller.view addSubview:_fpsLabel];
+
   __weak GalaxyPadNewEngineHost *weakSelf = self;
+  __weak GalaxyPadGameOverlay *weakOverlay = _overlay;
   _overlay.viewportProvider = ^CGRect {
     GalaxyPadNewEngineHost *host = weakSelf;
     return host ? host->_image : CGRectZero;
@@ -85,18 +128,46 @@ extern "C" void galaxypad_engine_switch_to_original(void);
     host->_mixer.set(galaxypad::InputSource::Touch, input);
     [host sendInput];
   };
-  _overlay.nativeUIChanged = ^{ [weakSelf menusChanged]; };
+  _overlay.nativeUIChanged = ^{ [weakSelf reconcile]; };
   _overlay.gyroSettingsChanged = ^{ [weakSelf clearInput]; };
-  __weak GalaxyPadGameOverlay *weakOverlay = _overlay;
-  _gyro = [GalaxyPadGyroPointer new];
-  __weak GalaxyPadGyroPointer *weakGyro = _gyro;
-  _overlay.gyroRecenterRequested = ^{ [weakGyro recenter]; };
-  _gyro.inputAllowed = ^BOOL {
+
+  // Game controllers: GalaxyPad's own adapter and mapping, as over the Old
+  // engine (the engine ignores them itself: PETARI_SDL_GAMEPADS=0).
+  _controllers = [[GalaxyPadControllers alloc] init];
+  __weak GalaxyPadControllers *weakControllers = _controllers;
+  _controllers.inputAllowed = ^BOOL {
     GalaxyPadNewEngineHost *host = weakSelf;
     return host && host->_active && host->_started && !host->_blocked;
   };
+  _controllers.pauseToggleAllowed = ^BOOL {
+    GalaxyPadNewEngineHost *host = weakSelf;
+    return host && host->_active && host->_started &&
+      !host->_controlsWindow.rootViewController.presentedViewController &&
+      (!host->_blocked || host->_overlay.nativePauseVisible);
+  };
+  _controllers.pauseRequested = ^{ [weakOverlay toggleNativePause]; };
+  _controllers.inputChanged = ^(galaxypad::InputState input) {
+    GalaxyPadNewEngineHost *host = weakSelf;
+    if (!host) return;
+    host->_mixer.set(galaxypad::InputSource::Controller, input);
+    [host sendInput];
+  };
+  _controllers.ownershipChanged = ^{
+    [weakSelf clearInput];
+    [weakOverlay refreshControllerVisibility];
+  };
+
+  _gyro = [GalaxyPadGyroPointer new];
+  __weak GalaxyPadGyroPointer *weakGyro = _gyro;
+  _overlay.gyroRecenterRequested = ^{ [weakGyro recenter]; };
+  _controllers.aimChanged = ^(float x, float y, BOOL recenter) { [weakGyro setStickX:x y:y recenter:recenter]; };
+  _gyro.inputAllowed = ^BOOL {
+    GalaxyPadNewEngineHost *host = weakSelf;
+    return host && host->_active && host->_started && !host->_blocked &&
+      !weakControllers.motionController.extendedGamepad.leftShoulder.isPressed;
+  };
   _gyro.orientation = ^UIInterfaceOrientation { return weakOverlay.window.windowScene.interfaceOrientation; };
-  _gyro.controller = ^GCController * { return nil; };
+  _gyro.controller = ^GCController * { return weakControllers.motionController; };
   _gyro.inputChanged = ^(galaxypad::InputState state) {
     GalaxyPadNewEngineHost *host = weakSelf;
     if (!host) return;
@@ -104,6 +175,7 @@ extern "C" void galaxypad_engine_switch_to_original(void);
     [host sendInput];
   };
   _gyro.statusChanged = ^(NSString *status) { weakOverlay.gyroStatus = status; };
+  [_controllers start];
   [_gyro start];
   _timer = [NSTimer scheduledTimerWithTimeInterval:0.1 repeats:YES block:^(NSTimer *timer) {
     GalaxyPadNewEngineHost *host = weakSelf;
@@ -125,7 +197,44 @@ extern "C" void galaxypad_engine_switch_to_original(void);
     _started = YES;
     _controlsWindow.hidden = NO;
     _overlay.gameplayAvailable = YES;
+    _overlay.stopRequested = ^{
+      GalaxyPadLog(@"new engine: Stop Game");
+      galaxypad_engine_quit();
+    };
+    _fpsTime = _windowTime = CACurrentMediaTime();
+    _fpsFrames = _windowFrames = galaxypad_engine_presented_frames();
     GalaxyPadLog(@"new engine: game started; GalaxyPad controls shown");
+  }
+  GalaxyPadSettings *settings = GalaxyPadSettings.sharedSettings;
+  const float volume = settings.mainAudioMuted ? 0.f : settings.mainVolume / 100.f;
+  if (volume != _volume) {
+    _volume = volume;
+    galaxypad_engine_set_volume(volume);
+  }
+  [self reconcile];
+  [self updateFrameRate];
+}
+
+// The FPS counter, and with Detailed Performance Logging five-second summaries
+// in the diagnostic log. Frames presented, in-between Smooth Motion frames included.
+- (void)updateFrameRate {
+  if (!_started) return;
+  const CFTimeInterval now = CACurrentMediaTime();
+  const uint64_t frames = galaxypad_engine_presented_frames();
+  const BOOL show = GalaxyPadSettings.sharedSettings.showFPSCounter;
+  _fpsLabel.hidden = !show;
+  if (now - _fpsTime >= 1.0) {
+    const double fps = (frames - _fpsFrames) / (now - _fpsTime);
+    if (show) _fpsLabel.text = _paused ? @"Paused" : [NSString stringWithFormat:@"%.1f FPS", fps];
+    _fpsTime = now;
+    _fpsFrames = frames;
+  }
+  if (_logFrameRateWindows && now - _windowTime >= 5.0) {
+    GalaxyPadLog(@"new engine frames: fps=%.1f window=%.1fs paused=%d smooth_motion=%d thermal=%ld",
+      (frames - _windowFrames) / (now - _windowTime), now - _windowTime, _paused,
+      galaxypad_engine_smooth_motion(-1), (long)NSProcessInfo.processInfo.thermalState);
+    _windowTime = now;
+    _windowFrames = frames;
   }
 }
 
@@ -141,21 +250,42 @@ extern "C" void galaxypad_engine_switch_to_original(void);
 - (void)clearInput {
   _mixer.clearAll();
   [_gyro reset];
+  [_controllers reset];
   [self sendInput];
 }
 
-- (void)menusChanged {
-  const BOOL blocked = _overlay.blocksGameplay || _overlay.nativeMenuVisible;
-  if (blocked == _blocked) return;
-  _blocked = blocked;
-  [self clearInput];
+// As over the Old engine: GalaxyPad's menus and sheets stop game input; its
+// pause screen, touch settings, alerts and sheets also hold the game (the
+// three-dot menu does not), and so does leaving the app.
+- (void)reconcile {
+  if (!_overlay) return;
+  const BOOL presented = _controlsWindow.rootViewController.presentedViewController != nil;
+  const BOOL nativeMenu = _overlay.nativeMenuVisible;
+  const BOOL blocked = _overlay.blocksGameplay || nativeMenu || presented;
+  const BOOL paused = _started && (!_active || (!nativeMenu && (presented || _overlay.blocksGameplay)));
+  if (blocked != _blocked) {
+    _blocked = blocked;
+    [self clearInput];
+    if (!blocked) [_controllers reconcile];
+  }
+  if (paused != _paused) {
+    _paused = paused;
+    galaxypad_engine_pause(paused);
+    GalaxyPadLog(@"new engine: %@", paused ? @"paused" : @"resumed");
+  }
+  UIApplication.sharedApplication.idleTimerDisabled = _active && _started;
 }
 
-- (void)becameActive { _active = YES; }
+- (void)becameActive {
+  _active = YES;
+  [_controllers reconcile];
+  [self reconcile];
+}
 - (void)resignedActive {
   _active = NO;
   [_overlay reset];
   [self clearInput];
+  [self reconcile];
 }
 
 - (UIViewController *)presenter {
@@ -164,21 +294,121 @@ extern "C" void galaxypad_engine_switch_to_original(void);
   return controller;
 }
 
+- (NSString *)diagnosticContext {
+  float x = 0, y = 0, w = 0, h = 0;
+  galaxypad_engine_image(&x, &y, &w, &h);
+  return [NSString stringWithFormat:
+    @"engine=new build=%@ platform=%@ os=%@ thermalState=%ld lowPowerMode=%d maxFPS=%ld "
+     "smoothMotion=%d widescreen=%d renderScaleSetting=%ld image=%.3f,%.3f,%.3fx%.3f paused=%d framesPresented=%llu",
+    [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleVersion"] ?: @"?",
+    TARGET_OS_SIMULATOR ? @"simulator" : @"device", UIDevice.currentDevice.systemVersion,
+    (long)NSProcessInfo.processInfo.thermalState, NSProcessInfo.processInfo.lowPowerModeEnabled,
+    (long)_controlsWindow.screen.maximumFramesPerSecond, galaxypad_engine_smooth_motion(-1),
+    galaxypad_engine_widescreen(-1),
+    (long)[NSUserDefaults.standardUserDefaults integerForKey:GalaxyPadNewEngineRenderScaleKey],
+    x, y, w, h, _paused, (unsigned long long)galaxypad_engine_presented_frames()];
+}
+
 #pragma mark - Menu
 
-- (void)gameOverlayRequestsOriginalEngine:(GalaxyPadGameOverlay *)overlay {
-  (void)overlay;
-  UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Switch to the Original Engine?"
-    message:@"GalaxyPad copies your saved progress to the Original engine and closes. Unsaved progress since your last save is lost. Open GalaxyPad again to play."
+- (NSArray<UIMenuElement *> *)gameOverlayDisplayItems:(GalaxyPadGameOverlay *)overlay {
+  __weak GalaxyPadGameOverlay *weakOverlay = overlay;
+  NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
+  const NSInteger scale = [defaults integerForKey:GalaxyPadNewEngineRenderScaleKey];
+  NSMutableArray<UIMenuElement *> *scales = [NSMutableArray array];
+  NSArray<NSString *> *names = @[@"Automatic (Recommended)", @"", @"2×", @"3×", @"4× (Higher GPU Cost)"];
+  for (NSInteger value : {0, 2, 3, 4}) {
+    UIAction *action = [UIAction actionWithTitle:names[value] image:nil identifier:nil
+      handler:^(__kindof UIAction *unused) {
+        (void)unused;
+        [NSUserDefaults.standardUserDefaults setInteger:value forKey:GalaxyPadNewEngineRenderScaleKey];
+        [weakOverlay refreshMenuButton];
+      }];
+    if (value == 0) action.subtitle = @"Screen resolution; 3× with Smooth Motion";
+    else action.subtitle = @"Times the game's own 640×480 image";
+    action.state = scale == value ? UIMenuElementStateOn : UIMenuElementStateOff;
+    [scales addObject:action];
+  }
+  UIMenu *render = [UIMenu menuWithTitle:@"Render Resolution (Next Launch)" children:scales];
+
+  const int wide = galaxypad_engine_widescreen(-1);
+  NSMutableArray<UIMenuElement *> *aspects = [NSMutableArray array];
+  for (int value : {0, 1}) {
+    UIAction *action = [UIAction actionWithTitle:value ? @"16:9 (Restart Required)" : @"4:3 (Restart Required)"
+      image:nil identifier:nil handler:^(__kindof UIAction *unused) {
+        (void)unused;
+        galaxypad_engine_widescreen(value);
+        [weakOverlay refreshMenuButton];
+      }];
+    action.state = wide == value ? UIMenuElementStateOn : UIMenuElementStateOff;
+    [aspects addObject:action];
+  }
+  UIMenu *aspect = [UIMenu menuWithTitle:@"Aspect Ratio" children:aspects];
+
+  const BOOL proMotion = _controlsWindow.screen.maximumFramesPerSecond >= 120;
+  UIAction *smooth = [UIAction actionWithTitle:@"Smooth Motion (120 FPS)" image:[UIImage systemImageNamed:@"wind"]
+    identifier:@"galaxypad.menu.smooth-motion" handler:^(__kindof UIAction *unused) {
+      (void)unused;
+      galaxypad_engine_smooth_motion(galaxypad_engine_smooth_motion(-1) ? 0 : 1);
+      [weakOverlay refreshMenuButton];
+    }];
+  smooth.subtitle = proMotion ? @"Draws between the game's 60 steps on this 120 Hz screen"
+                              : @"Needs a 120 Hz ProMotion screen";
+  smooth.state = galaxypad_engine_smooth_motion(-1) ? UIMenuElementStateOn : UIMenuElementStateOff;
+  if (!proMotion) smooth.attributes = UIMenuElementAttributesDisabled;
+  return @[smooth, render, aspect];
+}
+
+- (void)switchToOldEngineWithTitle:(NSString *)title message:(NSString *)message {
+  UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message
     preferredStyle:UIAlertControllerStyleAlert];
   [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
   [alert addAction:[UIAlertAction actionWithTitle:@"Switch" style:UIAlertActionStyleDefault
     handler:^(UIAlertAction *action) {
       (void)action;
-      GalaxyPadLog(@"new engine: switching to the Original engine");
+      GalaxyPadLog(@"new engine: switching to the Old engine");
       galaxypad_engine_switch_to_original();
     }]];
   [[self presenter] presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)gameOverlayRequestsOldEngine:(GalaxyPadGameOverlay *)overlay {
+  (void)overlay;
+  [self switchToOldEngineWithTitle:@"Switch to the Old Engine?"
+    message:@"GalaxyPad copies your saved progress to the Old engine and closes. Unsaved progress since your last save is lost. Open GalaxyPad again to play."];
+}
+
+// Importing and removing game data run in the Old engine, which owns the import
+// flow and does not read the game files while it runs one.
+- (void)gameDataNeedsOldEngine {
+  [self switchToOldEngineWithTitle:@"Use the Old Engine for This"
+    message:@"Importing or removing game data happens in the Old engine. GalaxyPad copies your saved progress across and closes; open it again and choose Game Data & Saves. Switch back with Engine → New Engine when you're done."];
+}
+- (void)gameOverlayRequestsGameDataChange:(GalaxyPadGameOverlay *)overlay { (void)overlay; [self gameDataNeedsOldEngine]; }
+- (void)gameOverlayRequestsGameDataFolderImport:(GalaxyPadGameOverlay *)overlay { (void)overlay; [self gameDataNeedsOldEngine]; }
+- (void)gameOverlayRequestsGameDataRemoval:(GalaxyPadGameOverlay *)overlay { (void)overlay; [self gameDataNeedsOldEngine]; }
+
+- (void)gameOverlayRequestsGameDataStatus:(GalaxyPadGameOverlay *)overlay {
+  (void)overlay;
+  [[self presenter] presentViewController:[GalaxyPadAboutViewController gameDataStatusAlert] animated:YES completion:nil];
+}
+
+- (void)gameOverlayRequestsControllerMapping:(GalaxyPadGameOverlay *)overlay {
+  (void)overlay;
+  __weak GalaxyPadNewEngineHost *weakSelf = self;
+  GalaxyPadPresentControllerMapping([self presenter], ^{
+    GalaxyPadNewEngineHost *host = weakSelf;
+    if (!host) return;
+    [host->_controllers reloadMapping];
+    [host clearInput];
+  });
+}
+
+- (void)gameOverlayRequestsDiagnosticLog:(GalaxyPadGameOverlay *)overlay {
+  (void)overlay;
+  NSError *error = nil;
+  NSURL *url = GalaxyPadDiagnosticsReportURL(NSUUID.UUID.UUIDString, @{}, [self diagnosticContext], &error);
+  [GalaxyPadReportViewController presentReportURL:url from:[self presenter]];
 }
 
 - (void)gameOverlayRequestsAbout:(GalaxyPadGameOverlay *)overlay {
@@ -191,17 +421,19 @@ extern "C" void galaxypad_engine_switch_to_original(void);
 
 - (void)gameOverlayRequestsProblemReport:(GalaxyPadGameOverlay *)overlay {
   (void)overlay;
+  __weak GalaxyPadNewEngineHost *weakSelf = self;
   [GalaxyPadReportViewController presentReportPromptFrom:[self presenter] technicalContext:^NSString * {
-    return [NSString stringWithFormat:@"engine=new platform=%@ os=%@ thermalState=%ld lowPowerMode=%d",
-      TARGET_OS_SIMULATOR ? @"simulator" : @"device", UIDevice.currentDevice.systemVersion,
-      (long)NSProcessInfo.processInfo.thermalState, NSProcessInfo.processInfo.lowPowerModeEnabled];
+    return [weakSelf diagnosticContext] ?: @"engine=new";
   }];
 }
 @end
 
 void GalaxyPadNewEngineHostInstall(void) {
-  // GalaxyPad's controls replace the engine's own (its touch_controls.cpp).
+  // GalaxyPad's touch controls and game-controller adapter replace the engine's own.
   setenv("PETARI_TOUCH_CONTROLS", "0", 1);
+  setenv("PETARI_SDL_GAMEPADS", "0", 1);
+  const NSInteger scale = [NSUserDefaults.standardUserDefaults integerForKey:GalaxyPadNewEngineRenderScaleKey];
+  if (scale >= 2 && scale <= 4) setenv("PETARI_RENDER_SCALE", [@(scale).stringValue UTF8String], 1);
   GalaxyPadDiagnosticsStart();
   // Lives as long as the app (the engine never returns).
   static GalaxyPadNewEngineHost *host = [GalaxyPadNewEngineHost new];
