@@ -256,3 +256,17 @@ Approved by the owner on 12 October 2026 ("proceed with this plan"):
   `THIRD-PARTY-NOTICES.md` lists them and points there.
   For the owner's playtest: the New engine's Home menu follows the Wii, where a
   tap points at an item and A chooses it; a tap does not choose it directly.
+- **12 October 2026:** app size (Milestone 2 item). The engine's shader seeds were
+  51 databases, about 400 MB of the 459 MB app. The app now carries the engine's
+  tracked seed pack instead (272 KB, the same rows), and the engine expands it on
+  its first launch into `Library/Caches/Petari/pipeline-seeds`, again if iOS
+  clears that folder (`galaxypad-engine` `312efcce`). The app without the game module
+  is 59 MB (was 459 MB); with the module about 166 MB (was 562 MB). Storage on
+  the device after the first New launch is about the same, but in a folder iOS
+  can reclaim. The engine's test checks every expanded database against
+  `seedpack.py`, and that a cleared folder is refilled and a damaged pack refused;
+  92 engine tests pass. iPad Air Simulator: with the cache cleared, the first New
+  launch expanded all 51 databases and prepared the same 9,549 shaders.
+  Original engine after the round trip (iPhone 18 Pro Simulator, Simulator input):
+  title, file select showing the copied 121-star file, Play This File, the Comet
+  Observatory, and the player runs forward; the Wii save is unchanged afterwards.
