@@ -57,6 +57,12 @@ static std::array<unsigned char,512> fixtureHeader(uint64_t bytes) {
     writeToFile:[destination stringByAppendingPathComponent:@"marker"] atomically:YES]);
   completion(extractorMode==2,extractorMode==2?nil:@"Synthetic extraction failure.");
 }
+// Engine-file completion is not part of an import transaction.
++ (void)completeFilesForImageAtPath:(NSString *)image directory:(NSString *)directory
+    cancelled:(BOOL (^)(void))cancelled progress:(void (^)(double))progress
+    completion:(void (^)(BOOL,NSString *))completion {
+  (void)image; (void)directory; (void)cancelled; (void)progress; (void)completion; abort();
+}
 @end
 
 int main() {

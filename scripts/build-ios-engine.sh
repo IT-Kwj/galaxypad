@@ -18,7 +18,8 @@ cmake -S "$root/ref/galaxypad-engine" -B "$build" -G Ninja \
   -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DPETARI_BUILD_GX_PROBE=ON \
   -DCMAKE_DISABLE_FIND_PACKAGE_PkgConfig=ON -DCMAKE_DISABLE_FIND_PACKAGE_Freetype=ON \
   -DPETARI_PIPELINE_STAGE_SEEDS="$build/pipeline-seeds-source"
-cmake --build "$build" --target GalaxyPadEngine --parallel "${GALAXYPAD_BUILD_JOBS:-4}"
+# -k 0: report every compile error in one run.
+cmake --build "$build" --target GalaxyPadEngine --parallel "${GALAXYPAD_BUILD_JOBS:-4}" -- -k 0
 # Building must not change the pinned engine checkout.
 python3 "$root/scripts/dependency-lock.py"
 framework="$build/native/app/GalaxyPadEngine.framework"

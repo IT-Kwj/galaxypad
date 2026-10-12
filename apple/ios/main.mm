@@ -422,6 +422,15 @@ static double GalaxyPadResidentMiB(void) {
   if (_attemptedStart) return;
   _attemptedStart = YES;
   [self startGame];
+#if GALAXYPAD_NEW_ENGINE
+  // Device testing from a Mac (devicectl launch --environment-variables) runs the
+  // Engine menu's New choice without touch. Players never set it.
+  const char *selectNew = getenv("GALAXYPAD_TEST_SELECT_NEW_ENGINE");
+  if (selectNew && strcmp(selectNew, "1") == 0)
+    [self gameOverlayRequestsNewEngine:_overlay completion:^(BOOL selected) {
+      GalaxyPadLog(@"engine test: New selected=%d", selected);
+    }];
+#endif
 }
 - (void)restartGame {
   if (_host.busy || _import || _removingGameData || self.presentedViewController) return;
