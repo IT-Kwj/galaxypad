@@ -39,11 +39,15 @@ class DependencyLockTest(unittest.TestCase):
         dol = repository('dol')
         core = repository('core'); add(core, dol, 'DolRecomp')
         modern = repository('modern'); add(modern, core, 'vendor/dolphin')
+        engine = repository('engine')
         self.root = repository('project'); add(self.root, modern, 'ref/ModernGekko')
+        add(self.root, engine, 'ref/galaxypad-engine')
         git(self.root, '-c', 'protocol.file.allow=always', 'submodule', 'update', '--init', '--recursive')
         revisions = {name: git(path, 'rev-parse', 'HEAD') for name, path in
-                     [('modernGekko', modern), ('recompCore', core), ('dolRecomp', dol)]}
-        urls = {'modernGekko': str(modern), 'recompCore': str(core), 'dolRecomp': str(dol)}
+                     [('modernGekko', modern), ('recompCore', core), ('dolRecomp', dol),
+                      ('galaxyPadEngine', engine)]}
+        urls = {'modernGekko': str(modern), 'recompCore': str(core), 'dolRecomp': str(dol),
+                'galaxyPadEngine': str(engine)}
         self.lock = {'repositories': {name: {'revision': revision, 'url': urls[name]} for name, revision in revisions.items()},
                      'vendorRevisions': {'modernGekkoRecompCoreDolphin': revisions['recompCore']}}
         (self.root / 'config').mkdir()
@@ -51,6 +55,7 @@ class DependencyLockTest(unittest.TestCase):
         self.modern = self.root / 'ref/ModernGekko'
         self.core = self.modern / 'vendor/dolphin'
         self.dol = self.core / 'DolRecomp'
+        self.engine = self.root / 'ref/galaxypad-engine'
 
     def write_lock(self):
         (self.root / 'config/dependencies.lock.json').write_text(json.dumps(self.lock))
@@ -76,6 +81,15 @@ class DependencyLockTest(unittest.TestCase):
         self.lock['repositories']['modernGekko']['revision'] = '1' * 40
         self.write_lock()
         with self.assertRaisesRegex(ValueError, 'parent gitlink'): lock_module.verify(self.root)
+
+    def test_engine_gitlink_mismatch_rejected(self):
+        self.lock['repositories']['galaxyPadEngine']['revision'] = '1' * 40
+        self.write_lock()
+        with self.assertRaisesRegex(ValueError, 'galaxyPadEngine: parent gitlink'): lock_module.verify(self.root)
+
+    def test_dirty_engine_rejected(self):
+        (self.engine / 'source.cpp').write_text('int unreviewed;\n')
+        with self.assertRaisesRegex(ValueError, 'galaxyPadEngine'): lock_module.verify(self.root)
 
     def test_nested_gitlink_mismatch_rejected(self):
         git(self.core, 'update-index', '--cacheinfo', '160000,' + '1' * 40 + ',DolRecomp')

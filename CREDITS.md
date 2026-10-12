@@ -12,6 +12,7 @@ The Apple integration does not replace or claim authorship of their tools.
 | [ModernGekko-Template](https://github.com/ExpansionPak/ModernGekko-Template) | Pipeline reference |
 | [SunPad](https://github.com/chrissotraidis/sunpad) | Apple integration and touch-control foundation |
 | [Petari — SMGCommunity and contributors](https://github.com/SMGCommunity/Petari) | Galaxy semantic and source-map reference |
+| [MacioGalaxy — classicrob](https://github.com/classicrob/MacioGalaxy) | Native port of the Petari decompilation that the New engine (`galaxypad-engine`) is based on |
 | [Wiimms ISO Tools](https://wit.wiimm.de/) | Game-image inspection and extraction |
 
 ModernGekko's [upstream credits](https://github.com/ExpansionPak/ModernGekko#credits)
@@ -21,7 +22,9 @@ team. Those credits and the upstream contributor histories remain authoritative.
 
 GalaxyPad's maintained copies are [ModernGekko](https://github.com/chrissotraidis/ModernGekko),
 [RecompCore](https://github.com/chrissotraidis/RecompCore), and
-[DolRecomp](https://github.com/chrissotraidis/DolRecomp). Their upstream names,
+[DolRecomp](https://github.com/chrissotraidis/DolRecomp), and the New engine is
+[galaxypad-engine](https://github.com/chrissotraidis/galaxypad-engine), based on
+MacioGalaxy and Petari (both CC0). Their upstream names,
 contributor histories and licenses remain intact. Forks record the integration
 changes; they do not make the original tools GalaxyPad-authored work.
 

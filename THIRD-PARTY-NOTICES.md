@@ -14,6 +14,11 @@ the maintained forks, selected through pinned submodules. Exact references are i
 Original project names, author histories, licenses and per-file notices remain
 attached to that work. Optional experiments do not change the normal source graph.
 
+The New engine source (`ref/galaxypad-engine`, from MacioGalaxy and the Petari
+decompilation, both CC0) is pinned the same way but not yet built into the app.
+When it is, its bundled third-party code (including Aurora, Dawn and SDL) needs its
+license texts listed here and shipped with the app.
+
 The historical Preview 1 packages include PreviewNotices with original license texts from the runtime
 and its bundled third-party dependencies. The release source supplement contains
 runtime source and frozen audio inputs; the matching GalaxyPad integration source

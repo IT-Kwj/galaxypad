@@ -17,6 +17,7 @@ def pins(root):
                        lock['vendorRevisions']['modernGekkoRecompCoreDolphin']),
         'dolRecomp': (root / 'ref/ModernGekko/vendor/dolphin/DolRecomp',
                       repositories['dolRecomp']['revision']),
+        'galaxyPadEngine': (root / 'ref/galaxypad-engine', repositories['galaxyPadEngine']['revision']),
     }
 
 
@@ -25,7 +26,8 @@ def verify(root):
     repositories = json.loads((root / 'config/dependencies.lock.json').read_text())['repositories']
     parents = {'modernGekko': (root, 'ref/ModernGekko'),
                'recompCore': (root / 'ref/ModernGekko', 'vendor/dolphin'),
-               'dolRecomp': (root / 'ref/ModernGekko/vendor/dolphin', 'DolRecomp')}
+               'dolRecomp': (root / 'ref/ModernGekko/vendor/dolphin', 'DolRecomp'),
+               'galaxyPadEngine': (root, 'ref/galaxypad-engine')}
     for name, (checkout, expected) in locked.items():
         parent, relative = parents[name]
         modules = parent / '.gitmodules'
@@ -63,7 +65,7 @@ def verify(root):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=Path(__file__).resolve().parents[1])
-    parser.add_argument('--revision', choices=['modernGekko', 'recompCore', 'dolRecomp'])
+    parser.add_argument('--revision', choices=['modernGekko', 'recompCore', 'dolRecomp', 'galaxyPadEngine'])
     args = parser.parse_args()
     if args.revision:
         print(pins(args.root)[args.revision][1])
