@@ -311,3 +311,12 @@ Approved by the owner on 12 October 2026 ("proceed with this plan"):
   controls and menu over the 16:9 New engine. The engine's 92 Mac tests pass. In
   the Simulator the Mac's mouse also reaches the engine as a mouse (Game
   Controller), which shows a second "P2" star; a device without a mouse has none.
+  - iPad Pro 12.9-inch (6th generation), iPadOS 27.0.1, build 7214 (this change,
+    engine `1cda557c`), installed in place over 7213 with the same signing
+    identity; the 66 save, setting and preference files were backed up and read
+    back identically, and the saves (Wii `cd8d1fa9`, New `7e394e41`) were
+    unchanged after the install. The New engine opens with GalaxyPad's controls and
+    three-dot menu over the game and none of its own; the app's log records the
+    controls attached and shown after shader preparation. Taps sent from the Mac
+    do not reach the physical iPad, so playing with them and the switch back are
+    for the owner's hands.
