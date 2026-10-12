@@ -1020,6 +1020,11 @@ static BOOL GalaxyPadNewEngineArguments(int argc, char *argv[], NSMutableArray<N
   NSURL *wiiSave = [base URLByAppendingPathComponent:@"Wii/title/00010000/524d4745/data/GameData.bin"];
   if ([files fileExistsAtPath:wiiSave.path])
     [arguments addObjectsFromArray:@[@"--import-wii-save", wiiSave.path]];
+  // Device tests from a Mac add engine options (a test --user and fixture) after
+  // GalaxyPad's. The engine refuses unknown options, so this happens only on request.
+  const char *forward = getenv("GALAXYPAD_TEST_ENGINE_ARGS");
+  if (forward && strcmp(forward, "1") == 0)
+    for (int i = 1; i < argc; ++i) [arguments addObject:@(argv[i])];
   return YES;
 }
 // Hands the process to the New engine when it is selected; returns NO otherwise.
