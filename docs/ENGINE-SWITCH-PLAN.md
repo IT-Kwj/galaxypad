@@ -7,11 +7,12 @@ app has. This is the working plan for that change, done in milestones over
 several sessions. Read it with the [native engine plan](NATIVE-ENGINE-PLAN.md),
 which holds the research and the device measurements behind it.
 
-**Status, 12 October 2026:** Milestone 1, step 1 done. The New engine's source is
+**Status, 12 October 2026:** Milestone 1, step 2 built: device builds of GalaxyPad
+embed the New engine, with the Engine setting and launch choice in place (steps 3
+and 4 in code). Not yet run on a device. The engine source is
 [chrissotraidis/galaxypad-engine](https://github.com/chrissotraidis/galaxypad-engine),
-pinned in GalaxyPad at `ref/galaxypad-engine`; the app does not build it yet. It
-also runs as a separate test app (`org.galaxypad.native-probe`) on the iPhone 14
-and iPad Pro.
+pinned at `ref/galaxypad-engine`. It also runs as a separate test app
+(`org.galaxypad.native-probe`) on the iPhone 14 and iPad Pro.
 
 ## What the player gets
 
@@ -127,3 +128,32 @@ Approved by the owner on 12 October 2026 ("proceed with this plan"):
   README header naming the source and credits). Pinned at `ref/galaxypad-engine`;
   `bootstrap-dependencies.sh` checks it out and `dependency-lock.py` verifies it.
   Next: step 2, both engines in one app.
+- **12 October 2026:** step 2, both engines in one app (PR "Build the New engine
+  into GalaxyPad"). The engine (`galaxypad-engine` `e018bebb`) builds
+  `GalaxyPadEngine.framework`: one exported symbol, `galaxypad_engine_main`,
+  which starts the game through `SDL_RunApp`. GalaxyPad's executable defines 15 SDL
+  Objective-C classes of its own (the Original engine's SDL), and Objective-C class
+  names are process-wide, so the engine's build renames all 40 classes SDL
+  implements with a `GPE_` prefix; the app and framework now define no class in
+  common (checked with `nm`). SDL, abseil and the prebuilt Dawn package, which
+  Aurora fetches without a hash, are checked against recorded SHA-256 values.
+  `scripts/build-ios-engine.sh` builds it (device only: the prebuilt Dawn has no
+  Simulator package); a clean build took 195 s on an M3 Max (28 CPU minutes). The
+  device app embeds the framework in `Frameworks/` and the 400 MB of shader
+  manifests in `pipeline-seeds/` (app 459 MB; size is a Milestone 2 item), and
+  loads it only from `@executable_path/Frameworks`.
+  Launch choice (step 3): `main()` hands the process to the engine when the setting
+  is New and an imported game is installed, with `--disc GameData/RMGE01` and
+  `--user GalaxyPad/NewEngine`; otherwise GalaxyPad starts as before. Setting
+  (step 4): "Engine (Next Launch)" in GalaxyPad's menu, and "Original engine..." in
+  the engine's Home menu (with confirmation; it saves the setting and closes the
+  game like Quit). Local checks: device build of core, engine and app passes; the
+  repository suite passes except the host-pressure probe, which cannot read host
+  counters in this session and runs in CI.
+  Found on the way: this Mac's Homebrew minizip-ng was picked up by the core's
+  `USE_SYSTEM_LIBS=AUTO` (a local rebuild used an empty pkg-config path), and
+  Homebrew libpng by the engine's pkg-config lookup (the build script turns it off).
+  **Before step 8:** the private build artifacts for the installed build 7202 (its
+  tuned game module) are no longer on this Mac. A Milestone 1 build needs a newly
+  generated, unprofiled Original-engine module, and installing it over GalaxyPad
+  would replace 7202 permanently; the owner decides that before any install.

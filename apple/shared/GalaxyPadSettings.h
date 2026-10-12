@@ -20,6 +20,12 @@ typedef NS_ENUM(NSInteger, GalaxyPadGyroPointerSource) {
     GalaxyPadGyroPointerController = 2,
 };
 
+/* Which game engine plays (docs/ENGINE-SWITCH-PLAN.md). Applies at the next launch. */
+typedef NS_ENUM(NSInteger, GalaxyPadEngine) {
+    GalaxyPadEngineOriginal = 0,
+    GalaxyPadEngineNew = 1,
+};
+
 /* Persisted GalaxyPad settings shared by macOS, iOS, and iPadOS. Stored in
  * NSUserDefaults so each platform keeps the same user-facing options.
  */
@@ -30,6 +36,9 @@ typedef NS_ENUM(NSInteger, GalaxyPadGyroPointerSource) {
 /* Render-resolution scale. 1 = native Wii EFB, 2..4 = multiplier. */
 @property(nonatomic, assign) NSInteger renderScale;
 - (float)renderScaleFloat;
+
+/* Original by default. The New engine exists in iOS device builds only. */
+@property(nonatomic, assign) GalaxyPadEngine engine;
 
 /* Output aspect ratio. Native 4:3 is the iPad default. This affects game rendering, never
  * touch-control layout. */

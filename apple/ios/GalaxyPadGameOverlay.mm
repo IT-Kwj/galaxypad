@@ -623,6 +623,18 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
         about,
         stopAction,
     ] mutableCopy];
+#if GALAXYPAD_NEW_ENGINE
+    // docs/ENGINE-SWITCH-PLAN.md: the engine runs the whole app, so the choice
+    // applies when GalaxyPad is opened again.
+    [menuItems insertObject:[UIMenu menuWithTitle:@"Engine (Next Launch)"
+                                            image:[UIImage systemImageNamed:@"cpu"]
+                                       identifier:@"galaxypad.menu.engine"
+                                          options:0
+                                         children:@[
+        [self engineAction:@"Original" engine:GalaxyPadEngineOriginal],
+        [self engineAction:@"New (60 FPS, 120 on ProMotion)" engine:GalaxyPadEngineNew],
+    ]] atIndex:0];
+#endif
 #if TARGET_OS_SIMULATOR
     if ([NSUserDefaults.standardUserDefaults boolForKey:@"GalaxyPadDevCheckpoints"] &&
         [self.delegate respondsToSelector:@selector(gameOverlayRequestsDevelopmentCheckpoint:)]) {
@@ -697,6 +709,21 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
     renderAction.state = [GalaxyPadSettings sharedSettings].renderScale == scale ?
         UIMenuElementStateOn : UIMenuElementStateOff;
     return renderAction;
+}
+
+- (UIAction *)engineAction:(NSString *)title engine:(GalaxyPadEngine)engine {
+    __weak GalaxyPadGameOverlay *weakSelf = self;
+    UIAction *action = [UIAction actionWithTitle:title image:nil identifier:nil
+                                         handler:^(__kindof UIAction *selected) {
+        (void)selected;
+        [GalaxyPadSettings sharedSettings].engine = engine;
+        [[GalaxyPadSettings sharedSettings] synchronize];
+        [[[UISelectionFeedbackGenerator alloc] init] selectionChanged];
+        [weakSelf refreshMenuButton];
+    }];
+    action.state = [GalaxyPadSettings sharedSettings].engine == engine ?
+        UIMenuElementStateOn : UIMenuElementStateOff;
+    return action;
 }
 
 @synthesize stopRequested = _stopRequested;

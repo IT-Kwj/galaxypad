@@ -943,7 +943,46 @@ static double GalaxyPadResidentMiB(void) {
 @end
 @implementation GalaxyPadAppDelegate
 @end
+#if GALAXYPAD_NEW_ENGINE
+// GalaxyPadEngine.framework (ref/galaxypad-engine); its only exported symbol.
+extern "C" int galaxypad_engine_main(int argc, char *argv[]);
+// Engine setting (docs/ENGINE-SWITCH-PLAN.md). The New engine runs the whole app
+// when it is selected and an imported game is installed. Otherwise GalaxyPad
+// starts as before, so importing a game always happens here.
+static BOOL GalaxyPadNewEngineArguments(int argc, char *argv[], NSMutableArray<NSString *> *arguments) {
+  if (GalaxyPadSettings.sharedSettings.engine != GalaxyPadEngineNew) return NO;
+  NSFileManager *files = NSFileManager.defaultManager;
+  NSURL *support = [files URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask].firstObject;
+  NSURL *base = [support URLByAppendingPathComponent:@"GalaxyPad" isDirectory:YES];
+  NSURL *game = [base URLByAppendingPathComponent:@"GameData/RMGE01" isDirectory:YES];
+  NSURL *user = [base URLByAppendingPathComponent:@"NewEngine" isDirectory:YES];
+  if (![files fileExistsAtPath:[game URLByAppendingPathComponent:@"sys/main.dol"].path] ||
+      ![files createDirectoryAtURL:user withIntermediateDirectories:YES attributes:nil error:nil])
+    return NO;
+  [arguments addObject:@(argc > 0 ? argv[0] : "GalaxyPad")];
+  [arguments addObjectsFromArray:@[@"--disc", game.path, @"--user", user.path]];
+  return YES;
+}
+// Hands the process to the New engine when it is selected; returns NO otherwise.
+static BOOL GalaxyPadRunSelectedEngine(int argc, char *argv[], int *status) {
+  @autoreleasepool {
+    NSMutableArray<NSString *> *arguments = [NSMutableArray array];
+    if (!GalaxyPadNewEngineArguments(argc, argv, arguments)) return NO;
+    // Lets the engine's Home menu offer "Original engine..." (it writes GalaxyPadEngine).
+    setenv("GALAXYPAD_ENGINE_HOST", "1", 1);
+    // The engine keeps argv for the life of the process.
+    char **engineArgv = (char **)calloc(arguments.count + 1, sizeof(char *));
+    for (NSUInteger i = 0; i < arguments.count; ++i) engineArgv[i] = strdup(arguments[i].fileSystemRepresentation);
+    *status = galaxypad_engine_main((int)arguments.count, engineArgv);
+    return YES;
+  }
+}
+#else
+static BOOL GalaxyPadRunSelectedEngine(int, char *[], int *) { return NO; }
+#endif
 int main(int argc, char *argv[]) {
+  int engineStatus = 0;
+  if (GalaxyPadRunSelectedEngine(argc, argv, &engineStatus)) return engineStatus;
   // Guarded decoder byte stores: R647/R648/R650 mobile confirmation.
   // Set before runtime threads start; preserve explicit opt-out and other values.
   setenv("GALAXYPAD_LC_BYTE_FAST", "1", 0);

@@ -51,6 +51,7 @@ jobs:
           GALAXYPAD_IOS_SDK: iphoneos
         run: |
           bash scripts/build-ios-simulator-core.sh
+          bash scripts/build-ios-engine.sh
           bash scripts/build-ios-simulator-app.sh
       - name: Verify build left dependency sources unchanged
         run: python3 scripts/dependency-lock.py
