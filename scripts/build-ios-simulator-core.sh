@@ -14,6 +14,11 @@ build="$root/generated/build/$lane-core"
 python3 "$root/scripts/dependency-lock.py"
 # Simulator framebuffer support is committed in the pinned RecompCore fork.
 
+# Cross-compiling: never let pkg-config offer the Mac's own libraries (a
+# Homebrew minizip-ng was picked up this way). Bundled sources are used instead;
+# iOS SDK libraries (bzip2, iconv, lzma) are still found through the SDK.
+mkdir -p "$build/no-host-pkgconfig"
+export PKG_CONFIG_LIBDIR="$build/no-host-pkgconfig" PKG_CONFIG_PATH=""
 cmake -S "$runtime" -B "$build" -G Ninja \
   -DCMAKE_TOOLCHAIN_FILE="$root/scripts/$lane-toolchain.cmake" \
   -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
