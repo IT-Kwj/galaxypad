@@ -750,6 +750,13 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
     }];
     action.state = [GalaxyPadSettings sharedSettings].engine == engine ?
         UIMenuElementStateOn : UIMenuElementStateOff;
+    // Builds made by PadMint have only the New engine.
+    if (engine == GalaxyPadEngineOriginal &&
+        ![NSBundle.mainBundle pathForResource:@"gRMGE01_recomp" ofType:@"dylib" inDirectory:@"Frameworks"]) {
+        action.subtitle = @"Not included in this build";
+        action.attributes = UIMenuElementAttributesDisabled;
+        action.state = UIMenuElementStateOff;
+    }
     return action;
 }
 

@@ -37,7 +37,7 @@ typedef NS_ENUM(NSInteger, GalaxyPadEngine) {
 @property(nonatomic, assign) NSInteger renderScale;
 - (float)renderScaleFloat;
 
-/* Original by default. The New engine exists in iOS device builds only. */
+/* New by default (iOS builds with the New engine); a saved choice is kept. */
 @property(nonatomic, assign) GalaxyPadEngine engine;
 
 /* Output aspect ratio. Native 4:3 is the iPad default. This affects game rendering, never

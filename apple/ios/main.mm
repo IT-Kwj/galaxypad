@@ -45,6 +45,15 @@ static double GalaxyPadResidentMiB(void) {
 #include "GalaxyPadSimulatorInput.h"
 #endif
 
+#if GALAXYPAD_NEW_ENGINE
+// This launch shows GalaxyPad without a game because the New engine is chosen
+// but cannot start yet (no game imported, its files not added yet, or the
+// player asked for Game Data & Saves). The Old engine's game does not start.
+static BOOL GalaxyPadShellLaunch = NO;
+#endif
+static NSString *GalaxyPadOldEngineModule(void) {
+  return [NSBundle.mainBundle pathForResource:@"gRMGE01_recomp" ofType:@"dylib" inDirectory:@"Frameworks"];
+}
 @interface GalaxyPadGameViewController : GCEventViewController <GalaxyPadGameOverlayDelegate, UIDocumentPickerDelegate>
 - (void)setApplicationActive:(BOOL)active;
 - (void)reconcileControllerFocus;
@@ -424,6 +433,26 @@ static double GalaxyPadResidentMiB(void) {
   _attemptedStart = YES;
   [self startGame];
 }
+#if GALAXYPAD_NEW_ENGINE
+// The New engine is chosen but did not start: say what to do, and add the game
+// files it reads when an import from an older build lacks them.
+- (void)showNewEngineShellWithImage:(BOOL)image {
+  _status.hidden = NO;
+  NSURL *folder = [[self gameDataSupportURL] URLByAppendingPathComponent:@"GameData/RMGE01" isDirectory:YES];
+  const BOOL complete = [NSFileManager.defaultManager fileExistsAtPath:
+    [folder URLByAppendingPathComponent:@GalaxyPadFilesCompleteMarker].path];
+  if (!image) {
+    _status.text = @"Import your Super Mario Galaxy WBFS image using the three-dot menu, then open GalaxyPad again to play.";
+  } else if (!complete) {
+    _status.text = @"Preparing the game files…";
+    [self gameOverlayRequestsNewEngine:_overlay completion:^(BOOL selected) {
+      GalaxyPadLog(@"new engine shell: game files prepared=%d", selected);
+    }];
+  } else {
+    _status.text = @"Use Game Data & Saves in the three-dot menu. Open GalaxyPad again to play.";
+  }
+}
+#endif
 - (void)restartGame {
   if (_host.busy || _import || _removingGameData || self.presentedViewController) return;
   [self startGame];
@@ -440,8 +469,7 @@ static double GalaxyPadResidentMiB(void) {
   NSString *disc = nil;
   // Both platforms prefer the packaged module. Only Simulator development
   // launches may explicitly override it; imported data never supplies code.
-  NSString *module = [NSBundle.mainBundle pathForResource:@"gRMGE01_recomp"
-    ofType:@"dylib" inDirectory:@"Frameworks"];
+  NSString *module = GalaxyPadOldEngineModule();
 #if TARGET_OS_SIMULATOR
   NSUserDefaults *args = NSUserDefaults.standardUserDefaults;
   root = [args stringForKey:@"GalaxyPadDevGameRoot"];
@@ -455,6 +483,12 @@ static double GalaxyPadResidentMiB(void) {
     root=[[installed URLByAppendingPathComponent:@"RMGE01"] path];
     disc=installedDisc;
   }
+#if GALAXYPAD_NEW_ENGINE
+  if (GalaxyPadShellLaunch) {
+    [self showNewEngineShellWithImage:disc.length > 0];
+    return;
+  }
+#endif
   if (root.length && disc.length && module.length) {
     NSURL *support = [NSFileManager.defaultManager URLsForDirectory:NSApplicationSupportDirectory
       inDomains:NSUserDomainMask].firstObject;
@@ -623,7 +657,7 @@ static double GalaxyPadResidentMiB(void) {
   void (^select)(void)=^{
     GalaxyPadSettings.sharedSettings.engine=GalaxyPadEngineNew;
     [GalaxyPadSettings.sharedSettings synchronize];
-    NSString *message=@"New engine selected. Close and reopen GalaxyPad to use it.";
+    NSString *message=@"Ready. Close and reopen GalaxyPad to play with the New engine.";
     self->_status.hidden=NO;
     self->_status.text=message;
     // The game keeps running; take the note away after a moment.
@@ -919,7 +953,18 @@ extern "C" int galaxypad_engine_main(int argc, char *argv[]);
 // when it is selected and an imported game is installed. Otherwise GalaxyPad
 // starts as before, so importing a game always happens here.
 static BOOL GalaxyPadNewEngineArguments(int argc, char *argv[], NSMutableArray<NSString *> *arguments) {
-  if (GalaxyPadSettings.sharedSettings.engine != GalaxyPadEngineNew) return NO;
+  // Builds without the Old engine's module (PadMint's) always use the New engine.
+  if (GalaxyPadSettings.sharedSettings.engine != GalaxyPadEngineNew) {
+    if (GalaxyPadOldEngineModule()) return NO;
+    GalaxyPadSettings.sharedSettings.engine = GalaxyPadEngineNew;
+  }
+  GalaxyPadShellLaunch = YES;
+  // The New engine's Game Data & Saves asked for one launch without the game.
+  NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
+  if ([defaults boolForKey:@"GalaxyPadOpenShellOnce"]) {
+    [defaults removeObjectForKey:@"GalaxyPadOpenShellOnce"];
+    return NO;
+  }
   NSFileManager *files = NSFileManager.defaultManager;
   NSURL *support = [files URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask].firstObject;
   NSURL *base = [support URLByAppendingPathComponent:@"GalaxyPad" isDirectory:YES];
@@ -954,6 +999,7 @@ static BOOL GalaxyPadRunSelectedEngine(int argc, char *argv[], int *status) {
     // The engine keeps argv for the life of the process.
     char **engineArgv = (char **)calloc(arguments.count + 1, sizeof(char *));
     for (NSUInteger i = 0; i < arguments.count; ++i) engineArgv[i] = strdup(arguments[i].fileSystemRepresentation);
+    GalaxyPadShellLaunch = NO;
     *status = galaxypad_engine_main((int)arguments.count, engineArgv);
     return YES;
   }

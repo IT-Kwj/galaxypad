@@ -41,7 +41,7 @@ for lib in "${libs[@]}"; do
 done
 # Check a real runtime object rather than trusting the build directory's name.
 object="$build/CMakeFiles/moderngekko.dir/src/runtime/dolphin_runtime.cpp.o"
-xcrun vtool -show-build "$object" | rg -q "^[[:space:]]*platform $platform$"
+xcrun vtool -show-build "$object" | grep -Eq "^[[:space:]]*platform $platform$"
 mkdir -p "$out"
 xcrun libtool -static -o "$out/libGalaxyPadCore.a" "${libs[@]}"
 xcrun lipo "$out/libGalaxyPadCore.a" -verify_arch arm64

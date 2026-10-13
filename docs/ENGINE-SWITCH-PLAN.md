@@ -16,11 +16,11 @@ pinned at `ref/galaxypad-engine`. It also runs as a separate test app
 
 ## What the player gets
 
-- **Settings → Engine: Original / New.** The choice applies the next time the
-  app opens, because each engine runs the whole app while it plays. The New
-  engine's Home menu has the same switch.
-- **Original** stays exactly as it is, and stays the default until the owner
-  has played the New engine and approves the change.
+- **Settings → Engine: New / Old.** The choice applies the next time the
+  app opens, because each engine runs the whole app while it plays.
+- **New** is the default since 0.2.0 (the owner approved it on 13 October 2026
+  after playing it on the iPad Pro). **Old** stays as it was for installs that
+  chose it; PadMint's builds have only the New engine.
 - **New** is the Galaxy Native engine: 60 FPS on the iPhone 14, Smooth Motion at
   120 FPS on ProMotion iPads, lower input latency, and a one-time shader
   preparation screen. It looks and plays like GalaxyPad: GalaxyPad's own touch
