@@ -423,7 +423,7 @@ A separate post-window 8-second CPU sample in
 `python3 scripts/summarize-fallback-sample.py <sample> --output <cpu-self-summary.json>`.
 Of 6,402 CPU-thread wall-stack samples, 3,397 belong to generated chunks (53.1%),
 622 to the host Run symbol (9.7%), 269 to dispatcher (4.2%), and 304 to out-of-line
-PPC helpers (4.7%). Largest individual generated function: func_804B60A0, 155
+PPC helpers (4.7%). Largest individual generated function: the largest generated routine, 155
 samples. These are conserved self counts, not CPU-time percentages or frame
 acceptance. This favors investigating broad native execution/profile coverage
 over another tiny vertex-conversion change.
@@ -1033,7 +1033,7 @@ periodic reporting or that performance improved.
 This materially lowers the priority of interpreter/fallback routing as the
 cause of the observed slowdown. The measured hotspot remains native generated
 execution (`StaticRecompCore::Run` -> `chassis_dispatch`, led by
-`func_805170A0` in the matching CPU sample), while the phase trace already
+the leading dispatch routine in the matching CPU sample), while the phase trace already
 linked audio starvation to guest-producer gaps. The census is attribution only,
 not an FPS or audio-acceptance run; no module selection or physical install
 changed. A post-revert replay was also retained, but host pressure included an

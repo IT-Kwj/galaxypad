@@ -3,7 +3,7 @@
 
 Recompiles every native host source using the retained 7163 compile commands,
 relinks against the retained, hash-verified Preview 3 core archive, and emits an
-unsigned app shell (sign it with experiments/register-residency/package-candidate.py).
+unsigned app shell (the Old engine; see docs/OLD-ENGINE-DEPRECATION.md).
 """
 from pathlib import Path
 import argparse, hashlib, json, plistlib, subprocess

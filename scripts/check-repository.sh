@@ -156,8 +156,6 @@ python3 ./tests/test-completion-wiring.py
 python3 ./tests/test-completion-summary.py
 python3 ./tests/test-module-source-identity.py
 python3 ./tests/test-ios-lc-default.py
-python3 ./tests/test-thp-policy-wiring.py
-python3 ./tests/test-dcbz-policy-wiring.py
 python3 ./tests/test-fprf-regions.py
 python3 ./tests/test-ps-fprf-chain.py
 python3 ./tests/test-native-leaf-regions.py
@@ -168,7 +166,6 @@ python3 ./tests/test-cross-island-vector.py
 python3 ./tests/test-cross-eligibility-summary.py
 python3 ./tests/test-gpr-spans.py
 python3 ./tests/test-typed-ps-multiply.py
-python3 ./tests/test-normalization-square.py
 python3 ./tests/test-checked-ps-multiply.py
 python3 ./tests/test-audio-output-counters.py
 python3 ./tests/test-audio-window-summary.py

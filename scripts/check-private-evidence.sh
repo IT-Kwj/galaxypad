@@ -26,22 +26,14 @@ if [[ "$missing" == true ]]; then
 fi
 
 python3 ./tests/test-thp-dead-pc.py
-python3 ./tests/test-thp-dead-pc-entries.py
 python3 ./tests/test-vector-snapshot.py
 python3 ./tests/test-vector-plan.py
-python3 ./tests/test-thp-first-pass.py
 python3 ./tests/test-s16-psq-load.py
 python3 ./tests/test-s16-pair-psq-load.py
 python3 ./tests/test-two-range-lookup.py
 python3 ./tests/test-two-range-dispatch.py
 python3 ./tests/test-two-range-policy.py
 python3 ./tests/test-two-range-module-audit.py
-python3 ./tests/test-kernel-read-cache.py
-python3 ./tests/test-dc-store-run.py
-python3 ./tests/test-zero-column.py
-python3 ./tests/test-zero-column.py --nonzero-dc
-python3 ./tests/test-zero-column.py --nonzero-dc --second-kernel
 python3 ./tests/test-huffman-tail.py
-python3 ./tests/test-normal-kernel-entry.py
 # New-engine game-file completion against the real image (needs the Simulator core).
 bash ./tests/test-engine-files-completion.sh

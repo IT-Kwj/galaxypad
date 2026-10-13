@@ -2050,8 +2050,8 @@ reload pending. Capture started after save request; not a benchmark interval
 or a guarantee of complete exclusion of save activity.
 
 Export28822 CPU-thread leaf samples: Run3711 (12.88%), chassis_dispatch1256
-(4.36%), func_804B60A01143, func_800180A01130, func_805170A0721,
-func_8001C0A0594.81 E-core samples/remainder P cores. Same broad distribution
+(4.36%), the largest generated routine1143, a small FP routine1130, the leading dispatch routine721,
+another small FP routine594.81 E-core samples/remainder P cores. Same broad distribution
 as R419, no new dominant late-route hotspot. Do not repeat unchanged capture.
 Native3216200603/fallback0/smc_failed0; save106e unchanged; VI dropped0.
 Whole111underruns/6backlogs include startup/restore/save/profile/close and
@@ -2138,7 +2138,7 @@ CPU Profiler requested10s during repeatable movement input on diagnostic
 runnerb4df2afa/module1fb635f7. Arrival reload and post-input movement/Star Bit
 collection visibly verified. Export summary has29,266 CPU-thread leaf samples:
 StaticRecompCore::Run3549 (12.1%), chassis_dispatch1285 (4.4%),
-func_804B60A01115 and func_800180A01076.119 E-core samples, remainder P cores.
+the largest generated routine1115 and a small FP routine1076.119 E-core samples, remainder P cores.
 These are sampling shares, not exclusive frame-time costs or promised gains.
 Profile identifies runtime execution/dispatch as the next attribution target;
 it does not identify the user's20–40FPS cause or establish a speedup.
@@ -3595,7 +3595,7 @@ Both visibly advance movie and return to plaza, native close0, fallback0/smc_fai
 
 ## R122 — integrated paired-store activation proven
 
-Signed Pair-Candidate-r121.app opt-in1 with pair-activation-r118, no phase trace. R85state3 visibly restored and exact trigger80389 exits0. LLDB batch attach to PID99616, breakpoint on PowerPC::MMU::TryGetLockedCachePair(unsigned int), continue, thread step-out, register read x0, bt4, process detach. Session53292 exits0. Nonnull x0=0x12047c020 at ppc_psq_store+152 (cbz return guard); caller func_804520A0+51244, then chassis_dispatch/StaticRecompCore::Run. This confirms successful acquisition, not just method entry. Private pair-activation-r122-lldb.log.
+Signed Pair-Candidate-r121.app opt-in1 with pair-activation-r118, no phase trace. R85state3 visibly restored and exact trigger80389 exits0. LLDB batch attach to PID99616, breakpoint on PowerPC::MMU::TryGetLockedCachePair(unsigned int), continue, thread step-out, register read x0, bt4, process detach. Session53292 exits0. Nonnull x0=0x12047c020 at ppc_psq_store+152 (cbz return guard); caller the THP decode routine+51244, then chassis_dispatch/StaticRecompCore::Run. This confirms successful acquisition, not just method entry. Private pair-activation-r122-lldb.log.
 
 Movie visibly resumes after detach; native close55420 exits0. Private pair-activation-r122.log, disposable NAND unchanged. Debugger run and title-bar samples excluded from performance acceptance. Next identical candidate binaries with opt-in0/1 and prepared R118 profiles, same phase window, no profiler/debugger. Accepted app remains unchanged.
 
@@ -3665,13 +3665,13 @@ Baseline started after heavy link, no simultaneous build/profiler; unmeasured th
 
 Launched existing trainer through current package with LLVM_PROFILE_FILE=generated/pgo/decoder-profiles-r101/attack-%p.profraw and disposable decoder-training-r101 user directory. Native title, state3 restored at flowers/lake, one R85 trigger, visible advancing attack movie at two observations. Closed natively, exec70563 exit0; fallback=0/smc_failed=0, LC activation correct. Raw attack-87494.profraw, private log generated/runtime/decoder-training-r101.log. Instrumentation speed/underruns are not shipping metrics. NAND remains a5743199...afa6.
 
-llvm-profdata merge produced decoder-r102.profdata SHA b104996c07b61e7f65edec7d068c1e54da8d7695b904e8a2a21c5a5e3257d911. func_804520A0 entry 21,516,841, hash f933e25f9c38a25c; func_804530A0 entry 40,635,145, hash afb452bf05cdd1f5. Merge with unchanged accepted profile gives opening-decoder-r102.profdata SHA b355557fae4d0d826eb131807eca5f6bd95a0f51ac5edec50e15559d8838889b. No arbitrary counter synthesis or weighting.
+llvm-profdata merge produced decoder-r102.profdata SHA b104996c07b61e7f65edec7d068c1e54da8d7695b904e8a2a21c5a5e3257d911. the THP decode routine entry 21,516,841, hash f933e25f9c38a25c; the Huffman decode routine entry 40,635,145, hash afb452bf05cdd1f5. Merge with unchanged accepted profile gives opening-decoder-r102.profdata SHA b355557fae4d0d826eb131807eca5f6bd95a0f51ac5edec50e15559d8838889b. No arbitrary counter synthesis or weighting.
 
 scripts/build-decoder-pgo-experiment.sh checks inputs, reuses accepted generated source and unchanged helper, O2/ThinLTO/strict FP/arm64/macOS14; both compile and link receive merged profile. Config manifest explicitly unselected. Build session1268 live at 74/1332, log generated/pgo/decoder-r102-build.log; output decoder-use-r102. No game/build overlap during collection, no Simulator. Repository suite passes. Next poll same build through link/audit, then matched movie comparison; no promotion until runtime evidence.
 
 ## R101 — exact decoder absent from accepted compiler profile
 
-Read current rmge01.profdata using llvm-profdata show --counts --function. func_804520A0: entry 0, 2947 internal counters all zero, CFG hash f933e25f9c38a25c. func_804530A0: entry 0, 2627 internal counters all zero, CFG hash afb452bf05cdd1f5. These are R94 sample's two hottest generated functions (462/528 self samples). ppc_ps_add_op has 90,172,284 calls, so the file is not generally empty. The previous opening+Gateway profile also reports decoder func_804520A0 entry 0. This gives a different hypothesis from repeating rejected Gateway training: train the actual movie decoder, retain unchanged code and strict FP, then measure a profile-only candidate.
+Read current rmge01.profdata using llvm-profdata show --counts --function. the THP decode routine: entry 0, 2947 internal counters all zero, CFG hash f933e25f9c38a25c. the Huffman decode routine: entry 0, 2627 internal counters all zero, CFG hash afb452bf05cdd1f5. These are R94 sample's two hottest generated functions (462/528 self samples). ppc_ps_add_op has 90,172,284 calls, so the file is not generally empty. The previous opening+Gateway profile also reports decoder the THP decode routine entry 0. This gives a different hypothesis from repeating rejected Gateway training: train the actual movie decoder, retain unchanged code and strict FP, then measure a profile-only candidate.
 
 Existing generated/pgo/instrument-build/gRMGE01_recomp.dylib SHA 591ff35e70a1ca20cf3da1d91a72b593f249ab36d63fb043a849e2b3d7e8e033 has RMGE01 ABI3/1322 chunks/19 SMC descriptor. Its CMake source is cache 7f703e89efc28f0b; recursive diff -qr of that generated tree vs accepted 1a7fde44f42859a5 tree exits 0 with no differences. Build flags include O2, fprofile-instr-generate, ThinLTO, strict FP, arm64/macOS14. Current helper source matches prior reference SHA 3026eb10...4806c. This supports reusing training artifact, not performance acceptance. Prepared isolated decoder-training-r101 from R85 Config/Wii/config.ini and slot 3 (aea2b7a3...7ab8), Pipe configured. No runtime launched yet. Next use LLVM_PROFILE_FILE under generated/pgo/decoder-profiles-r101, visually restore and trigger attack, clean exit, then check decoder coverage before any costly candidate build. Never benchmark instrumented runtime as shipping speed.
 
@@ -3716,7 +3716,7 @@ Four alternating five-million-call normal-add microbenchmarks in latest run: ref
 
 Launched current packaged wrapper via env -u GALAXYPAD_LC_BYTE_FAST, isolated default-lc-r94 copied R85 checkpoint/config/NAND. Module unchanged. Correct scene restored; exact trigger starts movie, activation logs pc=80452a2c/ea=e0000000 without explicit opt-in. Visible 46.1 FPS before sampling, 49.2 at close. This confirms argument-driven packaged default, not a new frontend Play interaction or performance average. Five-second sample captured under default-lc-r94/attack.sample.txt, then normal close exit 0, fallback/failed SMC zero. Whole-run 129 underruns remain; sampled/mixed run is not acceptance.
 
-CPU thread 3940 samples, 3730 beneath Run, 3619 under chassis_dispatch. Self-summary: func_804530A0 528; func_804520A0 462; ppc_ps_add_op 328, madd 302, sub 218, convert_to_double 155, TryWriteLockedCacheByte 132. Those aggregate self counts do not identify exact operand distributions. Pixel-store callsite +51244 now 53 inclusive samples versus historical R81 89, but different runs/movie times preclude a precise before/after attribution.
+CPU thread 3940 samples, 3730 beneath Run, 3619 under chassis_dispatch. Self-summary: the Huffman decode routine 528; the THP decode routine 462; ppc_ps_add_op 328, madd 302, sub 218, convert_to_double 155, TryWriteLockedCacheByte 132. Those aggregate self counts do not identify exact operand distributions. Pixel-store callsite +51244 now 53 inclusive samples versus historical R81 89, but different runs/movie times preclude a precise before/after attribution.
 
 Next inspect paired-single arithmetic and conversion fast paths, with bit-exact NaN payload/signalling, subnormal, rounding and FPSCR behavior. GXRuntime types.h convert_to_double is integer-exact and preserves signalling NaNs; blindly substituting a hardware float cast could change them. Prior failed blanket inlining and CLZ candidates remain rejected. Do not loosen FP semantics or disable rendering correctness to chase the residual ~47-FPS gap. No runtime/Simulator remains.
 
@@ -3770,7 +3770,7 @@ Private log generated/runtime/pixel-r88.log; movie visibly advances at 42.5 FPS.
 
 ## R87 — exact pixel-store hotspot localized
 
-R81 sample's 89-sample callsite func_804520A0+51244 maps to accepted binary 0x4bdc350 (base 0x4bcfb24). The preceding call at 0x4bdc34c is ppc_psq_store_inline. Native w23 is 0x80452558; adding 0x4d4 proves guest PC **0x80452A2C**, not 0x80452CD4. Exact generated C names psq_st f9,0(r6),0,6. Other large neighboring callsites also descend through quantized stores into HookExternalWrite/WriteToHardware. This is a larger candidate cost than CLZ alone.
+R81 sample's 89-sample callsite the THP decode routine+51244 maps to accepted binary 0x4bdc350 (base 0x4bcfb24). The preceding call at 0x4bdc34c is ppc_psq_store_inline. Native w23 is 0x80452558; adding 0x4d4 proves guest PC **0x80452A2C**, not 0x80452CD4. Exact generated C names psq_st f9,0(r6),0,6. Other large neighboring callsites also descend through quantized stores into HookExternalWrite/WriteToHardware. This is a larger candidate cost than CLZ alone.
 
 Pinned Petari THPDec.c uses GQR6=0x3D043D04 (unsigned byte, scale -3); THPInit initializes its work tiles at 0xE0000000; IDCT writes those tiles before LCStoreData copies to output. These source matches strongly suggest locked-cache pixel writes, but the current runtime effective address/GQR/MSR at this exact PC still needs measurement. Wrong-region symbol addresses are not used.
 

@@ -7,7 +7,7 @@ tests/probe-chunk-coverage.py builds a temporary coverage-mapping object for
 the exact current chunk under its actual Ninja defines/includes/compiler flags,
 substituting instrumentation/coverage generation for PGO use and ThinLTO. It
 does not execute that object. llvm-cov export applies retained frontend profile
-data. Function count65272501 matches llvm-profdata show for func_804B60A0.
+data. Function count65272501 matches llvm-profdata show for the largest generated routine.
 Only the expected freshly-built-object timestamp warning is allowed and
 recorded; other diagnostics fail the probe. No counter mismatch reported.
 
