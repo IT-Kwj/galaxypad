@@ -4,7 +4,7 @@
   "name": "GalaxyPad",
   "game": "Super Mario Galaxy (Wii, RMGE01)",
   "kind": "decomp-patches",
-  "status": "draft-untested",
+  "status": "experimental",
   "inputs": [
     {
       "type": "wii-disc",

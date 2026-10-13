@@ -350,3 +350,14 @@ Approved by the owner on 12 October 2026 ("proceed with this plan"):
     on 7214; the test hook selected New again, and 7215 opens the New engine with
     GalaxyPad's controls (app log). The right stick and the menu items need the
     owner's hands on the iPad.
+- **13 October 2026:** the owner played build 7215 on the iPad Pro ("running at 120
+  frames a second", "the stick is good to go") and asked for the New engine as the
+  default and a release. GalaxyPad 0.2.0 makes New the default (a saved choice is
+  kept) and is delivered through PadMint (owner's choice): padmint.json builds the
+  runtime, the New engine and the app from a clean clone with no game file, and
+  scripts/package-padmint-ipa.sh packages an unsigned IPA without the Old engine's
+  module. A launch that cannot start the New engine yet opens GalaxyPad without the
+  game, adds the New engine's files to an older import itself and asks to reopen.
+  The Old engine is deprecated and its routine research retired so the source
+  passes PadMint's release gate ([OLD-ENGINE-DEPRECATION](OLD-ENGINE-DEPRECATION.md)).
+  Release notes: [RELEASE-0.2.0](RELEASE-0.2.0.md).
