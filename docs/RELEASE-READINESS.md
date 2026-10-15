@@ -1,12 +1,11 @@
 # GalaxyPad release readiness
 
-## Current release: 0.2.1, October 15, 2026
+## Current release: 0.2.2, October 16, 2026
 
-GalaxyPad 0.2.1 is public as a source/build-recipe release. PadMint 0.5.2+ builds
+GalaxyPad 0.2.2 uses the source/build-recipe release model. PadMint 0.5.2+ builds
 an iPhone/iPad IPA locally on an Apple silicon Mac; personal binaries are not
-public downloads. See [release notes](RELEASE-0.2.1.md) for the exact commit,
-engine pin, successful pre/post-publication player checks, CI and remaining
-validation. [Install instructions](INSTALL_IPAD.md) are the player entry point.
+public downloads. See [release notes](RELEASE-0.2.2.md) for the engine pin, fresh-install checks and remaining validation. The GitHub
+release records the exact commit, CI and pre/post-publication player checks. [Install instructions](INSTALL_IPAD.md) are the player entry point.
 
 The owner authorized this publication. That is not full-game completion,
 universal device compatibility or permission to distribute personal binaries.

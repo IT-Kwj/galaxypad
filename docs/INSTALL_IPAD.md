@@ -1,9 +1,9 @@
 # Install GalaxyPad on iPhone or iPad
 
-## Current release: 0.2.1 with PadMint 0.5.2 or newer
+## Current release: 0.2.2 with PadMint 0.5.2 or newer
 
 GalaxyPad is built on your own **Apple silicon Mac**. The
-[public release](https://github.com/chrissotraidis/galaxypad/releases/tag/v0.2.1)
+[public release](https://github.com/chrissotraidis/galaxypad/releases/tag/v0.2.2)
 contains a build recipe and checksums, not a prebuilt IPA. The New engine is
 MacioGalaxy/Petari compiled natively; no private AOT module or PGO cache is needed.
 
@@ -18,7 +18,10 @@ MacioGalaxy/Petari compiled natively; no private AOT module or PGO cache is need
    that tool's setup and refresh requirements. GalaxyPad does not supply signing
    credentials or a computer-free installation method.
 4. Open GalaxyPad, then **⋯ → Game Data & Saves → Import or Reimport Game Data**.
-   Choose your own **Super Mario Galaxy USA RMGE01, revision 0, single-file WBFS**.
+   Tap **Choose Image** and select your own **Super Mario Galaxy USA RMGE01,
+   revision 0, single-file WBFS** directly from Downloads, iCloud Drive or another
+   Files location. Download cloud files locally first. You do not have to move
+   the file into a GalaxyPad folder.
    ISO, other regions/revisions and split WBFS are unsupported. Keep at least
    **9 GiB free on the device** for import, extraction and headroom.
 5. Reopen GalaxyPad when prompted. The first game launch prepares shaders; you
@@ -27,6 +30,21 @@ MacioGalaxy/Petari compiled natively; no private AOT module or PGO cache is need
 If you manage game data while the New engine is running, accept the prompt to
 close GalaxyPad, reopen it into the management screen, then choose the data
 operation again. Imported game data and saves are separate.
+
+## Optional: transfer through the GalaxyPad folder
+
+Open GalaxyPad once after installation. In Files, choose **Browse → On My iPhone
+or On My iPad → GalaxyPad**. Version 0.2.2 creates an **Import Game Data.txt** guide
+there so the folder is visible even before importing a game.
+
+Copy your supported WBFS directly into that folder, then return to GalaxyPad and
+choose **⋯ → Game Data & Saves → Import from GalaxyPad Folder**. Copying the file
+alone does not import it. The folder screen also offers **Choose Image** if you
+prefer to select the file elsewhere.
+
+If the folder is missing on an older build, use **Import or Reimport Game Data**
+to select the image directly, or rebuild the latest version with PadMint and
+update in place. Installed game data and saves remain in private app storage.
 
 ## Updating and keeping saves
 

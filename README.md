@@ -11,7 +11,7 @@
 </p>
 
 **Super Mario Galaxy running natively on iPhone and iPad.**
-GalaxyPad 0.2.1 uses the **New engine**: a maintained port of
+GalaxyPad 0.2.2 uses the **New engine**: a maintained port of
 [MacioGalaxy](https://github.com/classicrob/MacioGalaxy), built on the
 [Petari decompilation](https://github.com/SMGCommunity/Petari). The game code is
 compiled directly for Apple silicon, with Metal rendering, touch controls and
@@ -40,7 +40,7 @@ module. See [engine differences](docs/OLD-ENGINE-DEPRECATION.md),
 
 ## Get GalaxyPad
 
-[GalaxyPad 0.2.1](https://github.com/chrissotraidis/galaxypad/releases/tag/v0.2.1)
+[GalaxyPad 0.2.2](https://github.com/chrissotraidis/galaxypad/releases/tag/v0.2.2)
 for iPhone and iPad is built on your own Apple silicon Mac by
 [PadMint 0.5.2 or newer](https://github.com/chrissotraidis/padmint/releases/latest).
 PadMint selects the latest release automatically. There is no prebuilt download.
@@ -55,7 +55,9 @@ PadMint selects the latest release automatically. There is no prebuilt download.
    to keep your saves; don't uninstall first.
 4. Open GalaxyPad, tap the three-dot menu → **Game Data & Saves** → **Import or
    Reimport Game Data**, and choose your own Super Mario Galaxy (USA, RMGE01
-   revision 0) WBFS image. Keep at least **9 GiB free on the device** for import.
+   revision 0) WBFS image directly from Downloads, iCloud Drive or another Files
+   location. Download it locally first; it need not be in the GalaxyPad folder.
+   Keep at least **9 GiB free on the device** for import.
    Open GalaxyPad again when it says so. See the [installation guide](docs/INSTALL_IPAD.md).
 
 The first time the game starts, it prepares its shaders for a few minutes; tap to
@@ -63,7 +65,11 @@ start sooner and the rest finishes in the background.
 
 ## Current status
 
-**0.2.1 (build 7217)** fixes the slow three-dot menu: the New engine pauses the
+**0.2.2 (build 7218)** makes the GalaxyPad folder appear in Files after first
+launch and provides a direct file picker from the empty-folder screen.
+You can import from Downloads or iCloud Drive without moving the WBFS first.
+
+The 0.2.1 menu repair is included: the New engine pauses the
 game and audio while GalaxyPad menus, sheets or alerts are open, then resumes.
 The menu is shorter and grouped; Ball & Ray settings and the yellow tilt stick
 are hidden with the New engine, which handles those rides through the main stick.
@@ -75,10 +81,10 @@ are hidden with the New engine, which handles those rides through the main stick
 | Controls | Touch controls, controller mapping, gyro cursor and editable touch layouts |
 | Install | PadMint 0.5.2+ on an Apple silicon Mac; in-app USA RMGE01 revision 0 WBFS import |
 | Update | Install in place with the same sideloading tool, Apple ID and bundle identifier; saves were verified unchanged on both test devices |
-| Build verification | Exact release commit passed CI and PadMint player checks before tagging and after publication |
+| Build verification | See the release notes for CI, fresh-install Files checks and PadMint player-build evidence |
 | Remaining checks | Full-game completion, hands-on verification of the menu repair, and an iPad Simulator overlap check involving the hidden 1 button |
 
-Read the [0.2.1 release notes](docs/RELEASE-0.2.1.md), [current status](docs/STATUS.md)
+Read the [0.2.2 release notes](docs/RELEASE-0.2.2.md), [current status](docs/STATUS.md)
 and [documentation index](docs/README.md). The local repository suite still stops
 at a host-counter probe on the maintainer's Mac; the complete suite passes in CI.
 Device installation and automated tests are not full gameplay acceptance.
