@@ -215,6 +215,7 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
 
 @implementation GalaxyPadGameOverlay {
     UIButton *_menuButton;          // the three-dot menu
+    BOOL _menuNeedsRefresh;         // a setting changed while the menu was open
     UIView *_pauseOverlay;
     UIView *_pauseCard;
     UILabel *_pauseTitleLabel;
@@ -279,6 +280,10 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
         if (!overlay) return;
         [overlay clearTouchInput];
         overlay->_menuVisible = visible;
+        if (!visible && overlay->_menuNeedsRefresh) {
+            overlay->_menuNeedsRefresh = NO;
+            [overlay refreshMenuButton];
+        }
         if (overlay.nativeUIChanged) overlay.nativeUIChanged();
     };
     UIImageSymbolConfiguration *symbol =
@@ -471,7 +476,7 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
     if ([self.delegate respondsToSelector:@selector(gameOverlayDisplayItems:)])
         engineDisplay = [self.delegate gameOverlayDisplayItems:self];
     displayMenu = [displayMenu menuByReplacingChildren:
-        [engineDisplay arrayByAddingObjectsFromArray:@[fpsAction, loggingAction]]];
+        [engineDisplay arrayByAddingObject:fpsAction]];
 
     UIAction *reportProblemAction =
         [UIAction actionWithTitle:@"Report a Problem…"
@@ -537,42 +542,46 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
         choice.state=_rideTiltMode==mode ? UIMenuElementStateOn : UIMenuElementStateOff;
         [rideModes addObject:choice];
     }
-    UIMenuElement *rideMenu=[UIMenu menuWithTitle:@"Stick Mode (Touch / Controller)" children:rideModes];
-    if (_hostedByNewEngine) {
-        // The New engine sees when the game steers by tilt and turns the stick into it.
-        UIAction *automatic=[UIAction actionWithTitle:@"Stick Mode: Automatic" image:nil identifier:nil
-          handler:^(__kindof UIAction *action) { (void)action; }];
-        automatic.subtitle=@"The stick steers the Star Ball and Ray by itself";
-        automatic.attributes=UIMenuElementAttributesDisabled;
-        rideMenu=automatic;
-    }
+    UIMenu *rideMenu=[UIMenu menuWithTitle:@"Stick Mode (Touch / Controller)" children:rideModes];
     UIMenu *gyroMenu=[self gyroMenu];
+    UIAction *mappingAction = [UIAction actionWithTitle:@"Controller Button Mapping…"
+                        image:[UIImage systemImageNamed:@"gamecontroller"]
+                   identifier:nil handler:^(__kindof UIAction *action) {
+        (void)action;
+        [weakSelf.delegate gameOverlayRequestsControllerMapping:weakSelf];
+    }];
+    mappingAction.attributes = [self.delegate respondsToSelector:@selector(gameOverlayRequestsControllerMapping:)]
+        ? 0 : UIMenuElementAttributesDisabled;
+    UIAction *touchSettingsAction = [UIAction actionWithTitle:@"Touch Control Settings…"
+                        image:[UIImage systemImageNamed:@"hand.draw"]
+                   identifier:nil handler:^(__kindof UIAction *action) {
+        (void)action;
+        [weakSelf toggleSettingsPanel];
+    }];
+    UIAction *guideAction = [UIAction actionWithTitle:@"Touch Control Guide…"
+                        image:[UIImage systemImageNamed:@"questionmark.circle"]
+                   identifier:@"galaxypad.menu.touch-guide" handler:^(__kindof UIAction *action) {
+        (void)action;
+        [weakSelf.window.rootViewController presentViewController:[weakSelf touchControlGuide]
+            animated:YES completion:nil];
+    }];
+    // Sections, so the long list reads as three short groups on a phone.
+    NSMutableArray<UIMenuElement *> *controlSections = [@[
+        [UIMenu menuWithTitle:@"Touch" image:nil identifier:@"galaxypad.menu.controls.touch"
+            options:UIMenuOptionsDisplayInline children:@[touchAction, touchSettingsAction, auxiliaryAction]],
+        [UIMenu menuWithTitle:@"Controller" image:nil identifier:@"galaxypad.menu.controls.controller"
+            options:UIMenuOptionsDisplayInline children:@[mappingAction, gyroMenu]],
+    ] mutableCopy];
+    // The New engine turns the stick into ball and ray tilt by itself.
+    if (!_hostedByNewEngine)
+        [controlSections addObject:[UIMenu menuWithTitle:@"Ball & Ray" image:nil
+            identifier:@"galaxypad.menu.controls.ride" options:UIMenuOptionsDisplayInline
+            children:@[rideMenu, tiltAction, tiltResponse]]];
     UIMenu *controlsMenu = [UIMenu menuWithTitle:@"Controls"
                                            image:[UIImage systemImageNamed:@"gamecontroller"]
-                                      identifier:nil
+                                      identifier:@"galaxypad.menu.controls"
                                          options:0
-                                        children:@[
-        [UIAction actionWithTitle:@"Controller Button Mapping…"
-                            image:[UIImage systemImageNamed:@"gamecontroller"]
-                       identifier:nil handler:^(__kindof UIAction *action) {
-            (void)action;
-            [weakSelf.delegate gameOverlayRequestsControllerMapping:weakSelf];
-        }],
-        [UIAction actionWithTitle:@"Touch Control Settings…"
-                            image:[UIImage systemImageNamed:@"hand.draw"]
-                       identifier:nil handler:^(__kindof UIAction *action) {
-            (void)action;
-            [weakSelf toggleSettingsPanel];
-        }],
-        [UIAction actionWithTitle:@"Touch Control Guide…"
-                            image:[UIImage systemImageNamed:@"questionmark.circle"]
-                       identifier:@"galaxypad.menu.touch-guide" handler:^(__kindof UIAction *action) {
-            (void)action;
-            [weakSelf.window.rootViewController presentViewController:[weakSelf touchControlGuide]
-                animated:YES completion:nil];
-        }],
-        gyroMenu, rideMenu, touchAction, tiltAction, tiltResponse, auxiliaryAction,
-    ]];
+                                        children:controlSections];
 
     // These host adapters are not delivered yet. Do not present inert actions
     // as working, or accidentally route Galaxy reports/data to SunPad.
@@ -595,9 +604,6 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
     NSMutableArray<UIMenuElement *> *dataItems = [dataMenu.children mutableCopy];
     [dataItems insertObject:dataStatus atIndex:0];
     dataMenu = [dataMenu menuByReplacingChildren:dataItems];
-    ((UIAction *)controlsMenu.children.firstObject).attributes =
-      [self.delegate respondsToSelector:@selector(gameOverlayRequestsControllerMapping:)]
-        ? 0 : UIMenuElementAttributesDisabled;
     reportProblemAction.attributes = self.delegate ? 0 : UIMenuElementAttributesDisabled;
     UIAction *shareLog=[UIAction actionWithTitle:@"Share Diagnostic Log"
       image:[UIImage systemImageNamed:@"square.and.arrow.up"] identifier:nil
@@ -625,28 +631,32 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
         }];
     stopAction.attributes = UIMenuElementAttributesDestructive |
         (self.stopRequested ? 0 : UIMenuElementAttributesDisabled);
-    NSMutableArray<UIMenuElement *> *menuItems = [@[
-        displayMenu,
-        controlsMenu,
-        [self audioMenu],
-        dataMenu,
-        shareLog,
-        reportProblemAction,
-        about,
-        stopAction,
-    ] mutableCopy];
+    NSMutableArray<UIMenuElement *> *gameItems = [@[dataMenu] mutableCopy];
 #if GALAXYPAD_NEW_ENGINE
     // docs/ENGINE-SWITCH-PLAN.md: the engine runs the whole app, so the choice
     // applies when GalaxyPad is opened again.
-    [menuItems insertObject:[UIMenu menuWithTitle:@"Engine (Next Launch)"
-                                            image:[UIImage systemImageNamed:@"cpu"]
-                                       identifier:@"galaxypad.menu.engine"
-                                          options:0
-                                         children:@[
+    [gameItems addObject:[UIMenu menuWithTitle:@"Engine (Next Launch)"
+                                         image:[UIImage systemImageNamed:@"cpu"]
+                                    identifier:@"galaxypad.menu.engine"
+                                       options:0
+                                      children:@[
         [self engineAction:@"New Engine (60 FPS, 120 with Smooth Motion)" engine:GalaxyPadEngineNew],
         [self engineAction:@"Old Engine" engine:GalaxyPadEngineOriginal],
-    ]] atIndex:0];
+    ]]];
 #endif
+    UIMenu *helpMenu = [UIMenu menuWithTitle:@"Help & Feedback"
+                                       image:[UIImage systemImageNamed:@"questionmark.circle"]
+                                  identifier:@"galaxypad.menu.help"
+                                     options:0
+                                    children:@[guideAction, reportProblemAction, shareLog, loggingAction, about]];
+    NSMutableArray<UIMenuElement *> *menuItems = [@[
+        [UIMenu menuWithTitle:@"" image:nil identifier:@"galaxypad.menu.play"
+            options:UIMenuOptionsDisplayInline children:@[displayMenu, controlsMenu, [self audioMenu]]],
+        [UIMenu menuWithTitle:@"" image:nil identifier:@"galaxypad.menu.game"
+            options:UIMenuOptionsDisplayInline children:gameItems],
+        helpMenu,
+        stopAction,
+    ] mutableCopy];
 #if TARGET_OS_SIMULATOR
     if ([NSUserDefaults.standardUserDefaults boolForKey:@"GalaxyPadDevCheckpoints"] &&
         [self.delegate respondsToSelector:@selector(gameOverlayRequestsDevelopmentCheckpoint:)]) {
@@ -767,12 +777,16 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
 }
 
 - (void)refreshMenuButton {
+    // Replacing the menu while it is on screen makes UIKit lay it out again
+    // (the gyro status changes as the menu pauses input). Rebuild on close.
+    if (_menuVisible) { _menuNeedsRefresh = YES; return; }
     _menuButton.menu = [self buildMenu];
 }
 
 - (void)setHostedByNewEngine:(BOOL)hosted {
     _hostedByNewEngine = hosted;
     [self refreshMenuButton];
+    [self setNeedsLayout];
 }
 
 - (void)confirmGameDataRemoval {
@@ -1778,8 +1792,9 @@ static CGFloat GalaxyPadDefaultSizeScaleForControl(UIView *view, NSString *ident
             ? ((GalaxyPadGameButton *)control).inputMask : 0;
         BOOL auxiliary = mask == galaxypad::One || mask == galaxypad::Two ||
                          mask == galaxypad::Minus;
-        BOOL controlHidden = hidden || (control == _tiltStick && !_editingLayout &&
-            ![NSUserDefaults.standardUserDefaults boolForKey:@"GalaxyPadShowTiltStick"]);
+        // The New engine tilts from the main stick, so it has no tilt stick.
+        BOOL controlHidden = hidden || (control == _tiltStick && (_hostedByNewEngine || (!_editingLayout &&
+            ![NSUserDefaults.standardUserDefaults boolForKey:@"GalaxyPadShowTiltStick"])));
         controlHidden |= auxiliary && !_editingLayout &&
             ![NSUserDefaults.standardUserDefaults boolForKey:@"GalaxyPadShowAuxiliaryButtons"];
         control.hidden = controlHidden;

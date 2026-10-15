@@ -66,6 +66,17 @@ static UIView *Find(UIView *root, NSString *name, BOOL identifier) {
   for (UIView *child in root.subviews) if (UIView *match=Find(child,name,identifier)) return match;
   return nil;
 }
+// A menu element by title or identifier, at any depth (sections are inline menus).
+static UIMenuElement *MenuItem(UIMenu *menu, NSString *name) {
+  for (UIMenuElement *child in menu.children) {
+    NSString *identifier=[child isKindOfClass:UIMenu.class] ? ((UIMenu *)child).identifier :
+      [child isKindOfClass:UIAction.class] ? ((UIAction *)child).identifier : nil;
+    if ([child.title isEqual:name] || [identifier isEqual:name]) return child;
+    if ([child isKindOfClass:UIMenu.class])
+      if (UIMenuElement *found=MenuItem((UIMenu *)child,name)) return found;
+  }
+  return nil;
+}
 static void Check(BOOL condition,const char *message) {
   if (!condition) { fprintf(stderr,"FAIL: %s\n",message); exit(1); }
 }
@@ -231,7 +242,17 @@ static NSUInteger CountViews(UIView *root, Class type) {
   CGRect topSafe=UIEdgeInsetsInsetRect(overlay.bounds,overlay.safeAreaInsets);
   Check(CGRectGetMinY(menuControl.frame)>=CGRectGetMinY(topSafe)+19.5,
         "top controls keep the lowered iPad-safe inset");
-  Check(rootMenu.children.count==8,"root menu includes the main Audio group");
+  Check(rootMenu.children.count==4,"root menu: play section, game section, Help, Stop");
+  Check([((UIMenu *)rootMenu.children[0]).children[0].title isEqual:@"Display"] &&
+        [((UIMenu *)rootMenu.children[0]).children[1].title isEqual:@"Controls"] &&
+        [((UIMenu *)rootMenu.children[0]).children[2].title isEqual:@"Audio"],
+        "first section is Display, Controls, Audio");
+  Check([((UIMenu *)rootMenu.children[1]).children[0].title isEqual:@"Game Data & Saves"],
+        "second section starts with Game Data & Saves");
+  Check([rootMenu.children[2].title isEqual:@"Help & Feedback"],"Help & Feedback follows the sections");
+  for (NSString *item in @[@"galaxypad.menu.touch-guide", @"Report a Problem…", @"Share Diagnostic Log",
+                           @"galaxypad.menu.performance-log", @"galaxypad.menu.about"])
+    Check(MenuItem((UIMenu *)rootMenu.children[2],item)!=nil,"help items are under Help & Feedback");
   GalaxyPadSettings *audioSettings = GalaxyPadSettings.sharedSettings;
   Check(audioSettings.mainVolume==100 && !audioSettings.mainAudioMuted,"audio defaults full volume and unmuted");
   [overlay setMainVolume:50];
@@ -250,7 +271,7 @@ static NSUInteger CountViews(UIView *root, Class type) {
   [NSUserDefaults.standardUserDefaults setDouble:NAN forKey:@"GalaxyPadMainVolume"];
   Check(audioSettings.mainVolume==100,"nonfinite volume safely defaults");
   [overlay setMainVolume:100];
-  UIMenu *display=(UIMenu *)rootMenu.children.firstObject;
+  UIMenu *display=(UIMenu *)MenuItem(rootMenu,@"Display");
   Check([display.title isEqual:@"Display"],"SunPad Display group remains first");
   Check(((UIMenu *)display.children.firstObject).children.count==4,
         "all four render scales remain available under Display");
@@ -262,8 +283,9 @@ static NSUInteger CountViews(UIView *root, Class type) {
         "touch settings do not duplicate the render-resolution selector");
   Check([display.children[2].title isEqual:@"Show FPS Counter"],
         "FPS diagnostic is inside Display");
-  Check([((UIAction *)display.children[3]).identifier isEqual:@"galaxypad.menu.performance-log"] &&
-        ((UIAction *)display.children[3]).state==UIMenuElementStateOff,
+  Check(display.children.count==3,"Display holds resolution, aspect and the FPS counter");
+  UIAction *logging=(UIAction *)MenuItem(rootMenu,@"galaxypad.menu.performance-log");
+  Check(logging && logging.state==UIMenuElementStateOff,
         "persistent performance logging defaults off and is reachable");
   UIAction *stop=(UIAction *)rootMenu.children.lastObject;
   Check((stop.attributes & UIMenuElementAttributesDestructive) &&
@@ -283,8 +305,8 @@ static NSUInteger CountViews(UIView *root, Class type) {
   [nativeMenu contextMenuInteraction:nil willEndForConfiguration:nil animator:nil];
   Check(!overlay.nativeMenuVisible && !overlay.blocksGameplay,
         "menu dismissal releases gameplay without animator completion");
-  for (UIMenuElement *element in rootMenu.children) {
-    if ([element.title isEqual:@"Game Data & Saves"]) {
+  for (UIMenuElement *element in @[MenuItem(rootMenu,@"Game Data & Saves")]) {
+    {
       UIAction *status=(UIAction *)((UIMenu *)element).children.firstObject;
       Check([status.identifier isEqual:@"galaxypad.menu.data-status"] &&
             (status.attributes & UIMenuElementAttributesDisabled) &&
@@ -304,21 +326,34 @@ static NSUInteger CountViews(UIView *root, Class type) {
   Check(guide.actions.count==1 && [guide.actions.firstObject.title isEqual:@"Done"],
         "touch guide has explicit non-destructive dismissal");
   BOOL foundExtraAction=NO, foundGuideAction=NO;
-  for (UIMenuElement *element in [overlay buildMenu].children) {
-    if (![element isKindOfClass:UIMenu.class] || ![element.title isEqual:@"Controls"]) continue;
-    for (UIMenuElement *child in ((UIMenu *)element).children) {
-      if ([child isKindOfClass:UIAction.class] &&
-          [((UIAction *)child).identifier isEqual:@"galaxypad.menu.touch-guide"])
-        foundGuideAction=!(((UIAction *)child).attributes & UIMenuElementAttributesDisabled);
-      if ([child.title isEqual:@"Show Extra Wii Buttons (1 / 2 / −)"]) {
-        foundExtraAction=YES;
-        Check(!(((UIAction *)child).attributes & UIMenuElementAttributesDisabled),
-              "extra buttons action works without a host delegate");
-      }
-    }
+  {
+    UIMenu *built=[overlay buildMenu];
+    UIAction *guideItem=(UIAction *)MenuItem((UIMenu *)MenuItem(built,@"Help & Feedback"),@"galaxypad.menu.touch-guide");
+    foundGuideAction=guideItem && !(guideItem.attributes & UIMenuElementAttributesDisabled);
+    UIAction *extra=(UIAction *)MenuItem((UIMenu *)MenuItem(built,@"Controls"),@"Show Extra Wii Buttons (1 / 2 / −)");
+    foundExtraAction=extra!=nil;
+    Check(extra && !(extra.attributes & UIMenuElementAttributesDisabled),
+          "extra buttons action works without a host delegate");
+    UIMenu *controls=(UIMenu *)MenuItem(built,@"Controls");
+    Check(controls.children.count==3 && MenuItem(controls,@"galaxypad.menu.controls.ride"),
+          "Old engine Controls: Touch, Controller, Ball & Ray sections");
+    overlay.hostedByNewEngine=YES;
+    controls=(UIMenu *)MenuItem([overlay buildMenu],@"Controls");
+    Check(controls.children.count==2 && !MenuItem(controls,@"galaxypad.menu.controls.ride") &&
+          !MenuItem(controls,@"Stick Mode (Touch / Controller)"),
+          "New engine Controls leave out Ball & Ray, which the stick does itself");
+    overlay.hostedByNewEngine=NO;
   }
   Check(foundExtraAction,"advanced keys are reachable from Controls menu");
-  Check(foundGuideAction,"touch guide is available inside Controls without a host delegate");
+  Check(foundGuideAction,"touch guide is available under Help & Feedback without a host delegate");
+  // A setting that changes while the menu is open waits for it to close.
+  UIButton *liveMenu=(UIButton *)Find(overlay,@"galaxypad.menu",YES);
+  [(GalaxyPadMenuButton *)liveMenu contextMenuInteraction:nil willDisplayMenuForConfiguration:nil animator:nil];
+  UIMenu *shown=liveMenu.menu;
+  overlay.gyroStatus=@"Paused — resumes during normal gameplay";
+  Check(liveMenu.menu==shown,"the open menu is not replaced while it is on screen");
+  [(GalaxyPadMenuButton *)liveMenu contextMenuInteraction:nil willEndForConfiguration:nil animator:nil];
+  Check(liveMenu.menu!=shown,"the menu is rebuilt once it closes");
   [overlay setNeedsLayout]; [overlay layoutIfNeeded];
   if (self.traitCollection.userInterfaceIdiom == UIUserInterfaceIdiomPhone) {
     NSArray<NSString *> *visibleIDs=@[@"move", @"A", @"B", @"Spin", @"C", @"Z",
@@ -709,7 +744,7 @@ static NSUInteger CountViews(UIView *root, Class type) {
   [phoneHost removeFromParentViewController];
   // Invoke the exact menu action through public UIControl dispatch. This proves
   // its persistence/alert handler, separately from native menu navigation.
-  UIMenu *handlerDisplay=(UIMenu *)[overlay buildMenu].children.firstObject;
+  UIMenu *handlerDisplay=(UIMenu *)MenuItem([overlay buildMenu],@"Display");
   UIAction *nativeAspect=(UIAction *)((UIMenu *)handlerDisplay.children[1]).children[1];
   UIControl *aspectDispatch=[UIControl new];
   [aspectDispatch addAction:nativeAspect forControlEvents:UIControlEventTouchUpInside];
@@ -757,16 +792,27 @@ static NSUInteger CountViews(UIView *root, Class type) {
 }
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations { return UIInterfaceOrientationMaskLandscape; }
 @end
-@interface OverlayTestDelegate : UIResponder <UIApplicationDelegate>
+// Scene lifecycle, as the app uses (iOS 27 stops apps without it).
+@interface OverlayTestSceneDelegate : UIResponder <UIWindowSceneDelegate>
 @property(nonatomic,strong) UIWindow *window;
 @end
-@implementation OverlayTestDelegate
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)options {
-  (void)application; (void)options;
-  self.window=[[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+@implementation OverlayTestSceneDelegate
+- (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)options {
+  (void)session; (void)options;
+  self.window=[[UIWindow alloc] initWithWindowScene:(UIWindowScene *)scene];
   self.window.rootViewController=[OverlayTestViewController new];
   [self.window makeKeyAndVisible];
-  return YES;
+}
+@end
+@interface OverlayTestDelegate : UIResponder <UIApplicationDelegate>
+@end
+@implementation OverlayTestDelegate
+- (UISceneConfiguration *)application:(UIApplication *)application
+    configurationForConnectingSceneSession:(UISceneSession *)session options:(UISceneConnectionOptions *)options {
+  (void)application; (void)options;
+  UISceneConfiguration *configuration=[[UISceneConfiguration alloc] initWithName:@"Default" sessionRole:session.role];
+  configuration.delegateClass=OverlayTestSceneDelegate.class;
+  return configuration;
 }
 @end
 int main(int argc,char **argv) {

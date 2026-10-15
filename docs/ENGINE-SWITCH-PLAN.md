@@ -361,3 +361,14 @@ Approved by the owner on 12 October 2026 ("proceed with this plan"):
   The Old engine is deprecated and its routine research retired so the source
   passes PadMint's release gate ([OLD-ENGINE-DEPRECATION](OLD-ENGINE-DEPRECATION.md)).
   Release notes: [RELEASE-0.2.0](RELEASE-0.2.0.md).
+- **15 October 2026:** 0.2.0 published (GalaxyPad and PadMint 0.5.2), then the
+  owner found the three-dot menu laggy on the iPhone and long. Cause: the New
+  engine runs the game on the main thread, and UIKit only got it inside SDL's
+  per-frame event pump (a 2-microsecond run-loop slice), so the menu's animation
+  and touch tracking waited behind rendering; the paused loop also slept instead
+  of running the run loop, and the gyro status rebuilt the open menu. 0.2.1: the
+  three-dot menu, sheets and alerts pause the New engine; the paused seam runs the
+  run loop (engine `2817f5fd`, ui_wait.cpp); the menu is grouped into sections
+  and never replaced while open; Ball & Ray items and the tilt stick are hidden
+  with the New engine. Installed on the iPhone 14 and iPad Pro (saves identical);
+  owner check pending. Release notes: [RELEASE-0.2.1](RELEASE-0.2.1.md).

@@ -43,12 +43,16 @@ int main() { @autoreleasepool {
   // Build the real Controls menu and select Normal through its actual action.
   BOOL gyroFound=NO,rideFound=NO;
   for(UIMenuElement *element in [overlay buildMenu].children) {
-    if(![element.title isEqualToString:@"Controls"]) continue;
-    for(UIMenuElement *child in ((UIMenu *)element).children) {
+    // Sections are inline menus: Display / Controls / Audio first.
+    for(UIMenuElement *top in [element isKindOfClass:UIMenu.class] ? ((UIMenu *)element).children : @[]) {
+    if(![top.title isEqualToString:@"Controls"]) continue;
+    for(UIMenuElement *section in ((UIMenu *)top).children)
+    for(UIMenuElement *child in ((UIMenu *)section).children) {
       if([child.title isEqualToString:@"Gyro Cursor"]) gyroFound=YES;
       if([child.title isEqualToString:@"Stick Mode (Touch / Controller)"]) {
         rideFound=YES;press((UIAction *)((UIMenu *)child).children[0]);
       }
+    }
     }
   }
   assert(gyroFound && rideFound && mode==galaxypad::TiltMode::Normal);

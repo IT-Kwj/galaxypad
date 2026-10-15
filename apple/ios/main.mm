@@ -8,6 +8,7 @@
 #import "../shared/GalaxyPadDiagnostics.h"
 #import "GalaxyPadReportViewController.h"
 #import "GalaxyPadAboutViewController.h"
+#import "GalaxyPadGameDataStatus.h"
 #import "GalaxyPadControllers.h"
 #import "GalaxyPadControllerMappingPrompt.h"
 #import "GalaxyPadGyroPointer.h"
@@ -647,7 +648,7 @@ static NSString *GalaxyPadOldEngineModule(void) {
 }
 - (void)gameOverlayRequestsGameDataStatus:(GalaxyPadGameOverlay *)overlay {
   (void)overlay;
-  [self presentViewController:[GalaxyPadAboutViewController gameDataStatusAlert] animated:YES completion:nil];
+  [self presentViewController:GalaxyPadGameDataStatusAlert() animated:YES completion:nil];
 }
 - (void)gameOverlayRequestsNewEngine:(GalaxyPadGameOverlay *)overlay completion:(void (^)(BOOL))completion {
   (void)overlay;

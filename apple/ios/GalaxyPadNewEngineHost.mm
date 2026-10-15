@@ -5,6 +5,7 @@
 #import "GalaxyPadControllerMappingPrompt.h"
 #import "GalaxyPadGyroPointer.h"
 #import "GalaxyPadAboutViewController.h"
+#import "GalaxyPadGameDataStatus.h"
 #import "GalaxyPadReportViewController.h"
 #import "../shared/GalaxyPadDiagnostics.h"
 #import "../shared/GalaxyPadSettings.h"
@@ -254,15 +255,16 @@ static NSString *const GalaxyPadNewEngineRenderScaleKey = @"GalaxyPadNewEngineRe
   [self sendInput];
 }
 
-// As over the Old engine: GalaxyPad's menus and sheets stop game input; its
-// pause screen, touch settings, alerts and sheets also hold the game (the
-// three-dot menu does not), and so does leaving the app.
+// GalaxyPad's menus and sheets stop game input and hold the game, and so does
+// leaving the app. Unlike the Old engine, the three-dot menu holds it too: this
+// engine runs the game on the main thread, which UIKit needs to animate the menu
+// and track touches in it, so a running game makes the menu lag.
 - (void)reconcile {
   if (!_overlay) return;
   const BOOL presented = _controlsWindow.rootViewController.presentedViewController != nil;
   const BOOL nativeMenu = _overlay.nativeMenuVisible;
   const BOOL blocked = _overlay.blocksGameplay || nativeMenu || presented;
-  const BOOL paused = _started && (!_active || (!nativeMenu && (presented || _overlay.blocksGameplay)));
+  const BOOL paused = _started && (!_active || blocked);
   if (blocked != _blocked) {
     _blocked = blocked;
     [self clearInput];
@@ -402,7 +404,7 @@ static NSString *const GalaxyPadNewEngineRenderScaleKey = @"GalaxyPadNewEngineRe
 
 - (void)gameOverlayRequestsGameDataStatus:(GalaxyPadGameOverlay *)overlay {
   (void)overlay;
-  [[self presenter] presentViewController:[GalaxyPadAboutViewController gameDataStatusAlert] animated:YES completion:nil];
+  [[self presenter] presentViewController:GalaxyPadGameDataStatusAlert() animated:YES completion:nil];
 }
 
 - (void)gameOverlayRequestsControllerMapping:(GalaxyPadGameOverlay *)overlay {
