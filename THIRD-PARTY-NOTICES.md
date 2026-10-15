@@ -33,6 +33,10 @@ to forks does not rebuild those historical binaries or resolve missing build inp
 New releases must record complete build-input provenance as described in
 [CONTRIBUTING](CONTRIBUTING.md).
 
-Game images, extracted game assets, and saves are not included. The binary packages
-do include an AOT game-code module. The project does not grant rights in the original
-game. Rebuilding that module requires the supported user-supplied input.
+Current public releases contain integration source, a PadMint recipe and checksums;
+there is no public prebuilt IPA. PadMint builds the New engine locally, without
+an Old engine AOT module. The resulting personal IPA contains native game code
+and must stay private. Players supply their supported image in the app; no game
+image, extracted assets, save or signing material is distributed with the release.
+Historical preview binaries included AOT modules and retain their own notices
+and provenance limits. The project does not grant rights in the original game.

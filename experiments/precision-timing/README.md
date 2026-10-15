@@ -1,5 +1,9 @@
 # Precision timer experiment
 
+**Old engine experiment.** This opt-in research is not part of the current
+MacioGalaxy/Petari gameplay path. See the [documentation index](../../docs/README.md)
+and [Old engine deprecation](../../docs/OLD-ENGINE-DEPRECATION.md) before using it.
+
 Isolated Simulator-only source overlays against the accepted audio-tempo core
 and settings/perf host13. `python3 experiments/precision-timing/build.py --build`
 now produces `generated/experiments/precision-timing-v2-20260914`, preserving v1.

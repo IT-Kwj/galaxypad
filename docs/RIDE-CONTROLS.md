@@ -1,5 +1,13 @@
 # Ride controls investigation — 2026-09-19
 
+## Current release: use the main stick with the New engine
+
+GalaxyPad 0.2.1's New engine handles the Star Ball and Ray through the main
+movement stick. It hides the manual Ball & Ray settings and yellow tilt stick.
+The investigation below describes the **deprecated Old engine** only; do not
+follow its manual mode-switching instructions for a PadMint build. Full-game
+completion and every ride scenario are not yet verified.
+
 Status: included in Preview 4, compiled and host-tested. No claim of passing a
 retail ride tutorial or completing a course on a physical device.
 

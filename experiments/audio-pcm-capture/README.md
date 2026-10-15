@@ -1,5 +1,9 @@
 # Isolated post-mix PCM diagnostic
 
+**Old engine experiment.** This opt-in research is not part of the current
+MacioGalaxy/Petari gameplay path. See the [documentation index](../../docs/README.md)
+and [Old engine deprecation](../../docs/OLD-ENGINE-DEPRECATION.md) before using it.
+
 This is a temporary Simulator QA source, not a production audio change. `DiagnosticPcmCapture.h` and `CoreAudioSoundStream.cpp.patch` capture only GalaxyPad Mixer output: 48000 Hz, stereo, interleaved signed 16-bit little-endian samples, before RemoteIO output volume. It does not capture microphones, other apps, hardware output, or OS route processing.
 
 Set `GALAXYPAD_AUDIO_PCM_PATH` to a new writable absolute `.wav` path inside the app container when launching the diagnostic app. Leave the variable unset to disable capture. The buffer stores the first 120 seconds of rendered frames, including startup and navigation. It allocates and touches 23,040,000 bytes during initialization; the callback only copies PCM and updates bounded accounting. It does not queue audio or change playback latency. It has no file I/O, allocation, locks, or new worker in the callback. Short/invalid callbacks and frames omitted after capacity remain explicit in the manifest. One serial RemoteIO callback producer and one stream owner are required; a simultaneous second stream declines capture.

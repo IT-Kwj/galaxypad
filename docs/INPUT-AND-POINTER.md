@@ -1,6 +1,28 @@
 # Input and pointer
 
-## September 26: touch pointer calibration (source only, unreleased)
+## Current controls: 0.2.1 New engine
+
+Movement and pointer aim are separate. Aim at a Pull Star until the hand cursor
+appears, then hold A. Right Shoulder also provides A; Right Trigger provides B.
+Touch + or controller Menu / Start opens the game's own pause menu. Controller
+View / Select opens GalaxyPad's separate app pause overlay.
+
+**⋯ → Controls** has inline Touch and Controller sections: touch visibility,
+layout editing, extra Wii buttons, button mapping and Gyro Cursor. The Touch
+Control Guide is under **Help & Feedback**. The New engine handles Star Ball and
+Ray from the main stick; manual Ball & Ray modes and the yellow tilt stick are
+hidden. See [current menu guide](../README.md#controls-and-the-three-dot-menu).
+
+In 0.2.1, opening GalaxyPad menus, sheets or alerts pauses the New engine and
+audio until dismissal. The menu is not rebuilt while visible. This differs from
+the Old engine's menu behavior recorded below. Full-game input coverage and
+hands-on verification of the latest menu repair remain open.
+
+The dated calibration, virtual Wii Remote and runtime records below describe the
+Old engine and their original test builds; they are not current New engine
+pointer instructions or current release status.
+
+## September 26: Old engine touch pointer calibration (historical)
 
 A tap drives a virtual Wii Remote rotation that Dolphin's camera and the game's
 pointer calibration turn into a cursor. With Dolphin's defaults (IR total yaw
@@ -13,7 +35,7 @@ projection. Modeled error drops to a mean 3 points (worst 20 at the bottom
 corners). The model assumes neutral orientation; behavior after tilt or Spin
 and in gameplay is not yet confirmed by a player. Gyro aim uses the same IR
 ranges, so its movement per degree is about 25% smaller. Private builds
-7201–7205 carry it; no release does yet.
+7201–7205 carried it; it was unreleased at the time of this record.
 
 ## September 16: one game pause control and separate controller app pause
 

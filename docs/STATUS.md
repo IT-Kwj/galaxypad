@@ -1,6 +1,32 @@
 # GalaxyPad status
 
-## October 12: the Engine setting is in GalaxyPad (current)
+## October 15, 2026: GalaxyPad 0.2.1 is public (current)
+
+The latest release is **0.2.1 (7217)**, app revision
+`597c382f8d0a22c02065189cbaad80d99627f188`, built with **PadMint 0.5.2 or newer**
+on an Apple silicon Mac. The New engine is the default, from MacioGalaxy/Petari;
+the Old engine is deprecated and its game module is absent from PadMint builds.
+Players import their own USA RMGE01 revision 0 WBFS in the app.
+
+The owner's iPhone 14 gameplay feedback is positive. Earlier New engine records
+show about 60 FPS on that phone and 120 FPS presentation with Smooth Motion on
+the owner's iPad Pro. These do not establish full-game or every-device acceptance.
+0.2.1 repairs menu responsiveness by pausing the game/audio while GalaxyPad UI is
+open and reorganizes the menu. It was installed on both devices with saves
+verified unchanged; hands-on verification of the menu repair remains open.
+
+The exact release commit passed source-checks and ios-build CI. PadMint's player
+check passed before tagging and again from the published release using Apple's
+Python 3.9.6 and an empty PadMint folder. Public recipe/checksum downloads match.
+The local full-suite rerun still fails the host-pressure probe on this Mac;
+that is recorded separately from the passing CI suite. The iPad Simulator hidden
+1-button overlap and full-game completion are also open.
+
+Start with [installation](INSTALL_IPAD.md), [0.2.1 release evidence](RELEASE-0.2.1.md)
+and the [documentation index](README.md). The dated records below describe their
+own builds. Their "current", "next" and release-hold statements are historical.
+
+## October 12: the Engine setting is in GalaxyPad (historical)
 
 GalaxyPad now holds both engines: Original (the current one) and New (the native
 engine from `chrissotraidis/galaxypad-engine`). The Engine setting applies when
@@ -14,7 +40,7 @@ small pack). Not yet done: testing on the owner's iPhone and iPad (private build
 release. Results and remaining Milestone 2 work are in the
 [engine switch plan](ENGINE-SWITCH-PLAN.md).
 
-## October 11 native engine research (current direction)
+## October 11 native engine research (historical)
 
 **12 October overnight:** the native build now plays on the iPhone 14 and iPad Pro
 as a separate Home Screen app (Galaxy Native) with touch controls. On a hot iPhone

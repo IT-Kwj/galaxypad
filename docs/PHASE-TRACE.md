@@ -1,5 +1,12 @@
 # Frame-phase trace
 
+**Historical Old engine record.** The current iPhone/iPad release is 0.2.1,
+built through PadMint with the MacioGalaxy/Petari New engine. Start with
+[STATUS](STATUS.md), [installation](INSTALL_IPAD.md) and the
+[documentation index](README.md). The plans, module requirements, pending gates
+and "current"/"next" statements below describe their dated Old engine builds;
+they do not override current release instructions or establish New engine coverage.
+
 Status: **default-off instrumentation validated; matched active Metal trace complete**
 
 The remaining G6 stutter is scene-dependent and CPU-bound. A 10-second sample in the post-attack Star Festival plaza placed 5,932 of 7,000 CPU-thread samples in `StaticRecompCore::Run`, with 5,336 below `chassis_dispatch`. The video thread was waiting in 4,166 of 7,011 samples. Its synchronous EFB-depth wait appeared in only 48 samples, while the active remainder covered draw submission, vertex work, render-pass setup, and EFB copies. This does not make rendering free, but it rules out a continuously saturated Metal thread as the main cause of the observed slowdown.

@@ -1,5 +1,14 @@
 # Audio
 
+## Current New engine audio
+
+In 0.2.1, **⋯ → Audio** controls main volume and mute; unmuting keeps the chosen
+level. Opening GalaxyPad menus, sheets or alerts pauses the New engine and its
+audio, then resumes on dismissal. The New engine has its own audio path; the
+Dolphin mixer, DMA, RemoteIO and slowdown experiments below describe the Old
+engine and do not establish current audio quality or a current tuning recipe.
+See [release evidence](RELEASE-0.2.1.md) for tested builds and remaining coverage.
+
 ## R876 packaged menu and config retention
 
 Actual iPhone Simulator native menu: muted during startup, selected50% while

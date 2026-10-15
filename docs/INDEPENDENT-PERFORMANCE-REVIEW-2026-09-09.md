@@ -1,5 +1,10 @@
 # Independent performance review — supplied by Chris, 9 September 2026
 
+**Historical external review of the Old engine.** The quoted analysis and its
+local-checkout links are preserved below. Those links include private generated
+artifacts and obsolete source locations; they are not public downloads. For the
+current release, use [STATUS](STATUS.md) and the [documentation index](README.md).
+
 The review below is preserved verbatim as external analysis, not established
 fact or instructions overriding the PRD. See REVIEW-RESPONSE-2026-09-09.md for
 source-checked disposition and the revised execution queue.

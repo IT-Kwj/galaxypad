@@ -1,12 +1,59 @@
-# Install GalaxyPad on iPhone or iPad — experimental preview
+# Install GalaxyPad on iPhone or iPad
 
-> [!IMPORTANT]
-> **Downloads retired.** Prebuilt builds are no longer published, and release
-> links on this page no longer work. A build-it-yourself version is in progress.
+## Current release: 0.2.1 with PadMint 0.5.2 or newer
 
-Download the IPA from the public preview release (retired). It supports both device families and requires your own Apple signing. Skip the local export step below when using that release IPA. The installation assistant described here is a development helper; its export action remains pinned to an older local candidate.
+GalaxyPad is built on your own **Apple silicon Mac**. The
+[public release](https://github.com/chrissotraidis/galaxypad/releases/tag/v0.2.1)
+contains a build recipe and checksums, not a prebuilt IPA. The New engine is
+MacioGalaxy/Petari compiled natively; no private AOT module or PGO cache is needed.
 
-See [current preview notes](PREVIEW-2026-09-13.md) for build 13 and validation limits. Historical evidence below does not supersede that release record.
+1. Install **Xcode 26 or newer**, including the iOS platform, and open it once.
+   Select it in **Xcode Settings → Locations → Command Line Tools**. Command Line
+   Tools alone are not enough. Allow about **20 GB free on your Mac** for a build.
+2. Download [PadMint 0.5.2 or newer](https://github.com/chrissotraidis/padmint/releases/latest)
+   for macOS, extract it and launch it. Choose **GalaxyPad → iPhone / iPad**.
+   PadMint fetches the latest release and builds your personal `.ipa`. You do not
+   supply the game image during the build. Keep the resulting IPA private.
+3. Sign and install that IPA using **AltStore, SideStore or Sideloadly**. Follow
+   that tool's setup and refresh requirements. GalaxyPad does not supply signing
+   credentials or a computer-free installation method.
+4. Open GalaxyPad, then **⋯ → Game Data & Saves → Import or Reimport Game Data**.
+   Choose your own **Super Mario Galaxy USA RMGE01, revision 0, single-file WBFS**.
+   ISO, other regions/revisions and split WBFS are unsupported. Keep at least
+   **9 GiB free on the device** for import, extraction and headroom.
+5. Reopen GalaxyPad when prompted. The first game launch prepares shaders; you
+   can tap to start sooner while the rest finishes in the background.
+
+If you manage game data while the New engine is running, accept the prompt to
+close GalaxyPad, reopen it into the management screen, then choose the data
+operation again. Imported game data and saves are separate.
+
+## Updating and keeping saves
+
+Rebuild with PadMint and install **over your existing app**, using the same
+sideloading tool, Apple ID and bundle identifier. **Do not uninstall first.**
+Back up important saves before changing signing or installation methods. Existing
+supported imports can be reused; the New engine adds missing extracted files and
+carries over the Old engine save during migration. See [save handling](SAVE-AND-NAND.md).
+
+0.2.1 (7217) was installed in place on the owner's iPhone 14 and iPad Pro with
+save files byte-identical before and after. This is preservation evidence for
+those installations, not a guarantee across signing identities or uninstalling.
+
+## If something goes wrong
+
+Use **⋯ → Help & Feedback → Report a Problem…** or **Share Diagnostic Log**.
+Include the version, device/OS and what happened. Review any attachment first;
+never post your game image, extracted data, saves or signing information.
+Read [release evidence and known checks](RELEASE-0.2.1.md) before treating an
+installation or build success as complete gameplay validation.
+
+## Historical Old engine development workflow
+
+Everything below describes the older module-based development installer and its
+September evidence. It is not required for PadMint's current New engine build.
+**Install on iPad.command** still exports an older local candidate and must not
+be used to export 0.2.1. The current player path is the one above.
 
 ## Local development assistant
 
@@ -19,7 +66,7 @@ from this project. Do not disable Gatekeeper globally.
 uses the prepared R913 candidate in ignored `generated/` on the development Mac.
 On a different checkout it will report that the candidate is missing. Transfer
 your private IPA separately from that Mac, or complete the documented local
-device build with your own verified game input. The preview release now provides a separate audited IPA; the historical assistant does not produce that artifact.
+device build with your own verified game input. The former preview IPA was a separate artifact; it is not the current PadMint build.
 
 ### Building a new device candidate without the old private cache
 

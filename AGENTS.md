@@ -1,10 +1,19 @@
 # Working on GalaxyPad
 
-## Releases paused
+## Current release and publication boundary
 
-No public releases until this repo is marked Clear in the maintainer's private release audit. Do not publish, re-publish, or restore any release, IPA, APK, or macOS build, and do not add download links, until then.
+The owner authorized and published GalaxyPad 0.2.1 as a source/build-recipe
+release. PadMint 0.5.2+ builds the New engine locally. Public release assets are
+the recipe and checksums; personal IPAs and game binaries must stay private.
+Do not restore historical binaries or infer authorization for a new binary release.
+See [release evidence](docs/RELEASE-0.2.1.md) and [publication scope](docs/RIGHTS-STATUS.md).
 
-Before any future public release, every artifact must pass `python3 ~/.codex/release-gate/release_gate.py <artifact>` on the maintainer's machine. A failure is a stop, not a note.
+Before any future public release, every artifact must pass both `python3 -m padmint audit <artifact>`
+and `python3 ~/.codex/release-gate/release_gate.py <artifact>` on the maintainer's
+machine. A failure is a stop, not a note. For PadMint-built releases, run
+`scripts/player-check.sh` from PadMint's current main with the clean game checkout
+before tagging and without it after publishing. Apple's Python and an empty
+PadMint folder are required; warm-cache builds do not substitute for this check.
 
 Keep changes simple, focused and consistent with the existing application design.
 Recheck controls and navigation after changing their wiring. Do not suggest Figma.
@@ -13,8 +22,8 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) before implementation.
 ## Ownership and dependencies
 
 - GalaxyPad owns its Apple app, controls, import flow and packaging. Runtime and
-  compiler changes belong in the maintained ModernGekko, RecompCore or DolRecomp
-  fork, with reviewable commits. Update the app's pinned submodule reference to
+  compiler changes belong in the maintained galaxypad-engine, ModernGekko,
+  RecompCore or DolRecomp fork, with reviewable commits. Update the app's pinned submodule reference to
   consume them; do not recreate a bootstrap patch stack.
 - Preserve upstream names, author history, license texts and per-file attribution.
   Describe GalaxyPad's changes separately from upstream work. Follow an upstream
@@ -51,14 +60,12 @@ cannot acquire a complete source history by updating today's checkout.
 
 Do not describe a change as merged, published or device-validated before it is.
 
-## Current performance handoff
+## Current handoff
 
-Before resuming performance work, read
-[the September 16 session-close handoff](docs/SESSION-CLOSE-2026-09-16.md) and
-[STATUS](docs/STATUS.md). They distinguish the latest private phone build, public
-release, owner feedback, rejected experiments and unresolved architectural work.
-Do not treat historical plans or component benchmarks as current gameplay gains.
-For the native decompilation backend, read the
-[native engine plan](docs/NATIVE-ENGINE-PLAN.md); its device numbers come from a
-separate test app, not from GalaxyPad. Work on the Engine setting follows the
-[engine switch plan](docs/ENGINE-SWITCH-PLAN.md); record results in its progress log.
+Start with [STATUS](docs/STATUS.md), [0.2.1 release evidence](docs/RELEASE-0.2.1.md)
+and the [documentation index](docs/README.md). The New engine is the current
+mobile path; the [engine switch plan](docs/ENGINE-SWITCH-PLAN.md) records its
+integration and the [native engine plan](docs/NATIVE-ENGINE-PLAN.md) its research.
+The Old engine is [deprecated](docs/OLD-ENGINE-DEPRECATION.md). September handoffs
+and component benchmarks remain historical evidence, not current gameplay gains
+or instructions to resume retired performance work.

@@ -21,6 +21,11 @@ Prompt:
 merges Apple's generated icon metadata before app signing. It does not change
 the bundle identifier or other app settings. Keep the source and catalog together.
 
-Pending: home-screen masked/small-size acceptance, macOS icon packaging, and
-editable layered/vector artwork. The retained PNG is not represented as a
-layered design source. No public branding/release approval is implied.
+The mobile icon ships in GalaxyPad 0.2.1. The Mac development build has its own
+ICNS generation path (see [provenance](PROVENANCE.md)). Masked/small-size visual
+acceptance and editable layered/vector artwork remain separate checks; the PNG
+is not a layered design source.
+
+The gameplay screenshots in the root README were supplied by the project owner
+and are retained unchanged under `docs/images/`; they are not generated icon art.
+A visible FPS counter in a screenshot is not sustained-performance evidence.

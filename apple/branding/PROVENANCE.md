@@ -11,4 +11,6 @@ macOS: scripts/build-macos-icon.sh mechanically resizes that same original into
 Outputs remain in ignored generated/branding until included in a private package.
 
 The PNG is not a layered/vector editable source. That original PRD requirement,
-masked home-screen/Dock visual acceptance, and release approval remain open.
+and masked home-screen/Dock visual acceptance remain open. The mobile icon is
+in the published 0.2.1 source/build recipe; this does not certify every visual
+acceptance check.

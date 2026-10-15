@@ -1,5 +1,9 @@
 # Isolated DMA tempo experiment
 
+**Old engine experiment.** This opt-in research is not part of the current
+MacioGalaxy/Petari gameplay path. See the [documentation index](../../docs/README.md)
+and [Old engine deprecation](../../docs/OLD-ENGINE-DEPRECATION.md) before using it.
+
 This remains an opt-in runtime experiment. The combined threading/audio private
 candidate passed matched Simulator checks and was installed on the iPad; subjective
 physical sound acceptance remains open. Canonical Dolphin audio sources are

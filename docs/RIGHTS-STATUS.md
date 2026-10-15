@@ -1,11 +1,27 @@
-# Rights status
+# Publication scope
 
-Status: **private repository and authorized experimental release**
+## Current release: October 15, 2026
 
-Chris has authorized private local technical work on GalaxyPad using the locally supplied retail image, and on 10 September 2026 explicitly authorized committing and pushing the integration source to this private repository's main branch. On 13 September 2026 Chris explicitly authorized pushing the current work to main and publishing iPhone/iPad and macOS packages. The release remains in this existing private repository; changing repository visibility is not part of this action. Functional packages include their AOT module. Original game images, extracted assets, saves, device logs, personal provisioning profiles, and signing credentials are excluded.
+GalaxyPad is a public repository. The owner explicitly authorized publication of
+**0.2.1**, following 0.2.0. This release publishes integration source, the PadMint
+recipe and checksums. It does **not** publish an IPA or Mac game binary.
 
-The tentative topology is a separate private GalaxyPad integration repository containing original integration code, permitted patches, scripts, tests, and documentation. Retail data, extracted files, generated game code/modules, saves, NAND, and protected evidence remain local and ignored.
+PadMint 0.5.2+ builds a personal iPhone/iPad IPA on the player's Apple silicon Mac.
+That IPA contains the New engine's native game code and is not a public upload.
+Players supply their own supported USA RMGE01 revision 0 WBFS image in the app.
+Game images, extracted assets, saves, NAND, personal device logs, credentials and
+signing material remain private. See [release evidence](RELEASE-0.2.1.md),
+[credits](../CREDITS.md) and [third-party notices](../THIRD-PARTY-NOTICES.md).
 
-GalaxyPad is expected to adapt GPL-covered SunPad, ModernGekko, RecompCore/Dolphin, DolRecomp, and WIT mechanisms. The preview includes dependency license notices, source references and build provenance, and package audits. This owner authorization records the requested distribution scope; it is not a claim that third-party game rights are granted by the project. Further distribution and a public visibility change remain separate decisions.
+The public recipe, checksums and source archive passed the publication scanners.
+Those checks describe artifact contents; they do not confer third-party rights.
+Upstream licenses and attribution remain attached to their code. Owner release
+authorization is not permission from Nintendo or a grant of rights in the game.
 
-This file records an engineering gate and is not legal advice.
+## Historical distribution records
+
+The September development program started in a private repository and later
+produced experimental AOT preview packages. Its old private-repository language
+and binary approvals do not describe the current publication model. Historical
+binary provenance is not repaired retroactively by updating today's source.
+Any future public binary proposal requires its own review and authorization.
