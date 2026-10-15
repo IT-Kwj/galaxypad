@@ -41,7 +41,7 @@ its pointer. That store must retain its original pointer; the next access must
 see the new mapping. Reservation clearing remains checked. This confirms the
 existing R793 contract; it is not a newly discovered product defect.
 
-The entry dispatch and first case in exact `_func_804AB0A0` visibly contain
+The entry dispatch and first case in exact the load-entry routine visibly contain
 downcount, mapping metadata and actual guest-data loads. This provides a bounded
 source/assembly example, not a whole-function register-origin proof. Existing
 R311 and R452/453 mapping-cache failures remain binding. The compiler already

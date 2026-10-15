@@ -1532,7 +1532,7 @@ to about 81.19% native execution and 1.03% non-native routing, with the
 remainder outside those selected lanes. This is coarse attribution only, not
 an FPS/audio acceptance run, but it lowers the priority of fallback/interpreter
 routing and keeps the hotspot on generated native execution
-(`StaticRecompCore::Run` -> `chassis_dispatch`, led by `func_805170A0`).
+(`StaticRecompCore::Run` -> `chassis_dispatch`, led by the leading dispatch routine).
 Evidence is under
 `generated/runtime/ipad-iteration-1/simulator-baseline-run-cost-20260911b/`;
 no module selection or physical install changed. The post-revert replay is

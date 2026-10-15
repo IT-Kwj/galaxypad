@@ -964,18 +964,6 @@
       "sha256": "fbee4f13c98e89f0a9e0fd89584bfeda6f135019ca6eebc7553c262a71afaa84"
     },
     {
-      "sourceProjectPath": "patches/experiments/dcbz-loop-policy.inc",
-      "fork": "ModernGekko",
-      "forkPath": "tools/galaxypad_dcbz_policy.inc",
-      "sha256": "e8a6b3583006e6cd12785ce5b962e8b01354629d96aaea0ac3eea0ce192bc996"
-    },
-    {
-      "sourceProjectPath": "patches/experiments/thp-kernel-policy.inc",
-      "fork": "ModernGekko",
-      "forkPath": "tools/galaxypad_thp_policy.inc",
-      "sha256": "d1a160059a219ca78bb4aedebe24b1a3f93c45c02a906cfe5fa7257f7e3a0cd3"
-    },
-    {
       "sourceProjectPath": "patches/experiments/vi-timing-recorder.h",
       "fork": "ModernGekko",
       "forkPath": "src/runtime/vi-timing-recorder.h",

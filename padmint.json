@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "id": "galaxypad",
+  "name": "GalaxyPad",
+  "game": "Super Mario Galaxy (Wii, RMGE01)",
+  "kind": "decomp-patches",
+  "status": "experimental",
+  "inputs": [
+    {
+      "type": "wii-disc",
+      "formats": [
+        "wbfs"
+      ],
+      "when": "in-app",
+      "description": "Your own Super Mario Galaxy (USA, RMGE01 revision 0) WBFS image. You choose it in GalaxyPad after installing; the build does not read it."
+    }
+  ],
+  "targets": {
+    "ios": {
+      "hosts": {
+        "macos-arm64": "experimental"
+      },
+      "tools": [
+        "git",
+        "cmake",
+        "ninja"
+      ],
+      "output": "ipa",
+      "check": "ipa",
+      "steps": [
+        {
+          "stage": "dependencies",
+          "command": [
+            "/bin/bash",
+            "{repo}/scripts/bootstrap-dependencies.sh"
+          ]
+        },
+        {
+          "stage": "runtime",
+          "command": [
+            "/bin/bash",
+            "{repo}/scripts/build-ios-simulator-core.sh"
+          ],
+          "env": {
+            "GALAXYPAD_IOS_SDK": "iphoneos",
+            "GALAXYPAD_BUILD_JOBS": "{jobs}"
+          }
+        },
+        {
+          "stage": "engine",
+          "command": [
+            "/bin/bash",
+            "{repo}/scripts/build-ios-engine.sh"
+          ],
+          "env": {
+            "GALAXYPAD_IOS_SDK": "iphoneos",
+            "GALAXYPAD_BUILD_JOBS": "{jobs}"
+          }
+        },
+        {
+          "stage": "app",
+          "command": [
+            "/bin/bash",
+            "{repo}/scripts/build-ios-simulator-app.sh"
+          ],
+          "env": {
+            "GALAXYPAD_IOS_SDK": "iphoneos"
+          }
+        },
+        {
+          "stage": "package",
+          "command": [
+            "/bin/bash",
+            "{repo}/scripts/package-padmint-ipa.sh",
+            "{output}"
+          ]
+        }
+      ]
+    }
+  },
+  "requirements": {
+    "disk_gb": 20,
+    "tools": [
+      {
+        "name": "git",
+        "version_args": [
+          "--version"
+        ]
+      },
+      {
+        "name": "cmake",
+        "version_args": [
+          "--version"
+        ]
+      },
+      {
+        "name": "ninja",
+        "version_args": [
+          "--version"
+        ]
+      },
+      {
+        "name": "python3",
+        "version_args": [
+          "--version"
+        ]
+      },
+      {
+        "name": "xcodebuild",
+        "version_args": [
+          "-version"
+        ],
+        "min_version": "26",
+        "player": true,
+        "note": "Install Xcode 26 or newer with its iOS platform, then select it in Xcode Settings > Locations > Command Line Tools; Command Line Tools alone are not enough."
+      },
+      {
+        "name": "xcrun",
+        "label": "Xcode iPhoneOS SDK",
+        "version_args": [
+          "--sdk",
+          "iphoneos",
+          "--show-sdk-path"
+        ],
+        "player": true,
+        "note": "Install Xcode 26 or newer with its iOS platform, then select it in Xcode Settings > Locations > Command Line Tools; Command Line Tools alone are not enough."
+      }
+    ]
+  },
+  "publication": {
+    "public_binaries": false,
+    "reason": "Each copy is built on the player's own Mac and holds the game's code (the New engine), so it stays personal. The game image is chosen in the app after installing."
+  }
+}

@@ -378,11 +378,23 @@ static NSString *const GalaxyPadNewEngineRenderScaleKey = @"GalaxyPadNewEngineRe
     message:@"GalaxyPad copies your saved progress to the Old engine and closes. Unsaved progress since your last save is lost. Open GalaxyPad again to play."];
 }
 
-// Importing and removing game data run in the Old engine, which owns the import
-// flow and does not read the game files while it runs one.
+// Importing and removing game data happen while no game runs: GalaxyPad closes,
+// opens once without the game (main.mm, GalaxyPadOpenShellOnce), then plays
+// with the New engine again.
 - (void)gameDataNeedsOldEngine {
-  [self switchToOldEngineWithTitle:@"Use the Old Engine for This"
-    message:@"Importing or removing game data happens in the Old engine. GalaxyPad copies your saved progress across and closes; open it again and choose Game Data & Saves. Switch back with Engine → New Engine when you're done."];
+  UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Manage Game Data"
+    message:@"GalaxyPad closes so the game isn't running. Open it again, then choose Game Data & Saves in the three-dot menu. Your saves are kept."
+    preferredStyle:UIAlertControllerStyleAlert];
+  [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+  [alert addAction:[UIAlertAction actionWithTitle:@"Close GalaxyPad" style:UIAlertActionStyleDefault
+    handler:^(UIAlertAction *action) {
+      (void)action;
+      [NSUserDefaults.standardUserDefaults setBool:YES forKey:@"GalaxyPadOpenShellOnce"];
+      [NSUserDefaults.standardUserDefaults synchronize];
+      GalaxyPadLog(@"new engine: closing for Game Data & Saves");
+      galaxypad_engine_quit();
+    }]];
+  [[self presenter] presentViewController:alert animated:YES completion:nil];
 }
 - (void)gameOverlayRequestsGameDataChange:(GalaxyPadGameOverlay *)overlay { (void)overlay; [self gameDataNeedsOldEngine]; }
 - (void)gameOverlayRequestsGameDataFolderImport:(GalaxyPadGameOverlay *)overlay { (void)overlay; [self gameDataNeedsOldEngine]; }

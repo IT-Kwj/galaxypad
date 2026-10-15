@@ -2,8 +2,8 @@
 """Stress the optional calling convention across a real dylib boundary.
 
 Uses the production CPUState/descriptor headers. This is an ABI test, not guest
-execution or a throughput benchmark. The actual generated chunk is exercised
-separately by test-preserve-none-experiment.py.
+execution or a throughput benchmark. (The probe that ran it on a generated game
+routine was retired with the Old engine's research: docs/OLD-ENGINE-DEPRECATION.md.)
 """
 from pathlib import Path
 import subprocess

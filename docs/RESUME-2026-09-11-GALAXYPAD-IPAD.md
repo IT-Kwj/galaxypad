@@ -423,7 +423,7 @@ A separate post-window 8-second CPU sample in
 `python3 scripts/summarize-fallback-sample.py <sample> --output <cpu-self-summary.json>`.
 Of 6,402 CPU-thread wall-stack samples, 3,397 belong to generated chunks (53.1%),
 622 to the host Run symbol (9.7%), 269 to dispatcher (4.2%), and 304 to out-of-line
-PPC helpers (4.7%). Largest individual generated function: func_804B60A0, 155
+PPC helpers (4.7%). Largest individual generated function: the largest generated routine, 155
 samples. These are conserved self counts, not CPU-time percentages or frame
 acceptance. This favors investigating broad native execution/profile coverage
 over another tiny vertex-conversion change.

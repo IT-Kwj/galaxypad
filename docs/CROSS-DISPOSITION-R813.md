@@ -23,7 +23,7 @@ CPU thread has6004 observations. Its largest branch is4748 observations beneath
 StaticRecompCore::Run+2516, including4070 beneath chassis_dispatch+152. These
 are inclusive sampled stacks, not self CPU percentages. Among that dispatch
 branch,220 observations wait for a float future;138 are in the entire generated
-chunk func_804B60A0. Neither identifies the six-instruction region's CPU share.
+chunk the largest generated routine. Neither identifies the six-instruction region's CPU share.
 
 The process-wide leaf summary includes Run698, GPU loop413, chassis_dispatch242,
 ModManager::Dispatch227, VertexLoader::RunVertices194 and indexed normal-reader

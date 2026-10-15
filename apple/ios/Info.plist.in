@@ -9,8 +9,8 @@
 <!-- Compatibility with systems using the earlier Game Mode key. -->
 <key>GCSupportsGameMode</key><true/>
 <key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleShortVersionString</key><string>0.1.0</string>
-<key>CFBundleVersion</key><string>4</string>
+<key>CFBundleShortVersionString</key><string>0.2.0</string>
+<key>CFBundleVersion</key><string>7216</string>
 <key>LSRequiresIPhoneOS</key><true/>
 <key>UIFileSharingEnabled</key><true/>
 <key>LSSupportsOpeningDocumentsInPlace</key><true/>

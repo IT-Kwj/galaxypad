@@ -40,37 +40,45 @@ these forks, selected through pinned submodules. See the
 > Build, test and device records describe what was checked. This disclosure
 > concerns GalaxyPad's workflow, not the authorship of its upstream projects.
 
-## Experimental preview
+## Get GalaxyPad
 
-Previous builds have been retired; a new version is in progress. There is no
-download right now: you can [build GalaxyPad from source](#build-from-source) on
-an Apple Silicon Mac with your own game. [PadMint](https://github.com/chrissotraidis/padmint) lists GalaxyPad under **Not
-available yet** and links back here until a new download is ready.
+GalaxyPad 0.2.0 for iPhone and iPad is built on your own Apple silicon Mac by
+[PadMint](https://github.com/chrissotraidis/padmint). There is no prebuilt download.
+
+1. Install [Xcode](https://apps.apple.com/app/xcode/id497799835) 26 or newer with
+   its iOS platform, and open it once.
+2. Start PadMint, choose **GalaxyPad** and **iPhone / iPad**. The first build
+   downloads its sources and tools and takes a while; it needs about 20 GB free.
+3. Install the `.ipa` PadMint makes with AltStore, SideStore or Sideloadly.
+   Updating? Install it over your existing GalaxyPad with the same tool and Apple ID
+   to keep your saves; don't uninstall first.
+4. Open GalaxyPad, tap the three-dot menu → **Game Data & Saves** → **Import or
+   Reimport Game Data**, and choose your own Super Mario Galaxy (USA, RMGE01
+   revision 0) WBFS image. Open GalaxyPad again when it says so.
+
+The first time the game starts, it prepares its shaders for a few minutes; tap to
+start sooner and the rest finishes in the background.
 
 ## Current status
 
-**Preview 4 (build 7168)**, the last preview before downloads were retired, added optional device/controller gyro cursor aiming and
-manual **Ray Surfing / Star Ball** stick modes for iPhone and iPad. Open **Controls**
-to select them; gyro defaults to Off. Return Stick Mode to **Normal** after a ride.
-Sensitivity, vertical inversion and recenter controls are included.
+**GalaxyPad 0.2.0** plays with the **New engine** by default: the game's own code
+built natively for iPhone and iPad, with GalaxyPad's touch controls, controller
+support and three-dot menu over it. On the owner's iPad Pro it runs at 120 FPS with
+Smooth Motion; an iPhone 14 holds about 60 FPS. Saves carry over from earlier
+GalaxyPad versions. See the [0.2.0 release notes](docs/RELEASE-0.2.0.md) for what
+was tested and what is still open.
 
-It kept Preview 3's compatible WBFS importer, simplified Plus control,
-Game Mode metadata and tested runtime/audio refinements. The native host is rebuilt
-on current main. Automated input, sensor-adapter and menu checks pass; physical gyro
-feel and completion of the affected ride levels still need player validation.
-See the [release notes and validation limits](docs/PREVIEW-2026-09-19.md).
-
-Demanding scenes can still slow down, especially on iPhone. This is a controls
-update; no new FPS improvement or complete-game compatibility is claimed.
-The HUD counts frame events rather than guaranteeing displayed frames.
+The **Old engine** (ahead-of-time recompiled Wii code on a Dolphin-derived runtime)
+is still in the source but not in PadMint's builds. Earlier previews used it; see
+the [Preview 4 notes](docs/PREVIEW-2026-09-19.md).
 
 | Area | Current result |
 | --- | --- |
 | Game setup | Exact USA `RMGE01`, revision 0 input validation and local import |
-| Rendering | Metal gameplay; corrected depth access restores tested Pull Star activation and level entry |
-| Controls | Touch/controller input, optional gyro cursor, manual ride stick modes, and editable touch layouts |
-| Platforms | iPhone/iPad app targets and Apple silicon Mac development package; configured minimums are not verified device compatibility |
-| Release | Previews retired while a new version is prepared; iPhone performance and full-game acceptance remain open |
+| Engine | New engine by default: 60 FPS, 120 FPS with Smooth Motion on ProMotion screens |
+| Controls | Touch and controller input, gyro cursor, editable touch layouts; the New engine steers the Star Ball and Ray with the stick |
+| Platforms | iPhone and iPad, built by PadMint on an Apple silicon Mac; the Mac app is a development package with the Old engine |
+| Release | 0.2.0; full-game completion is not yet verified |
 
 See [current status](docs/STATUS.md), [performance evidence](docs/PERFORMANCE-2026-09-12.md),
 [release readiness](docs/RELEASE-READINESS.md), and the [development journal](docs/JOURNAL.md)
@@ -105,7 +113,11 @@ provides the graphics, audio/DSP, memory, timing, and input behavior it needs,
 using Metal for rendering. Interpreter fallbacks remain for code outside the
 recompiled coverage; iOS uses no runtime PowerPC JIT.
 
-The precise description is **ahead-of-time recompiled game code on a
+That describes the **Old engine**. The **New engine**, the default since 0.2.0, is
+the game's own code rebuilt as a native app (see [credits](CREDITS.md)), drawing with
+Metal and needing no Wii hardware model.
+
+The precise description of the Old engine is **ahead-of-time recompiled game code on a
 Dolphin-derived compatibility runtime**. GalaxyPad is a game-specific Apple app,
 not a general Wii loader or a from-scratch source port. Native ARM64 execution
 removes runtime translation for the recompiled code; it does not remove the
@@ -126,12 +138,15 @@ automatically compatible. See the import instructions below.
 <details>
 <summary><strong>Can I install it now?</strong></summary>
 
-Previous builds have been retired; a new version is in progress.
+Yes: PadMint builds it on your Mac. See [Get GalaxyPad](#get-galaxypad).
 
 </details>
 
 <details>
 <summary><strong>Does it run at 60 FPS?</strong></summary>
+
+With the New engine, yes: about 60 FPS on an iPhone 14, and 120 FPS with Smooth
+Motion on a ProMotion iPad Pro. The rest of this answer is about the Old engine.
 
 Lighter scenes reach 60 FPS. Heavy scenes still slow down, and users still report
 audio underruns. The current depth-enabled heavy-scene Simulator result is about
@@ -248,6 +263,17 @@ The default desktop package is `generated/macos/GalaxyPad.app`. Read
 [executable coverage](docs/EXECUTABLE-COVERAGE.md) and the build scripts before
 replacing an accepted module with a newly generated one.
 
+The iPhone/iPad app with the New engine, and no Old engine module, builds from a
+clean clone with no game file. These are the steps PadMint runs (`padmint.json`):
+
+```sh
+bash scripts/bootstrap-dependencies.sh
+GALAXYPAD_IOS_SDK=iphoneos bash scripts/build-ios-simulator-core.sh
+GALAXYPAD_IOS_SDK=iphoneos bash scripts/build-ios-engine.sh
+GALAXYPAD_IOS_SDK=iphoneos bash scripts/build-ios-simulator-app.sh
+bash scripts/package-padmint-ipa.sh GalaxyPad.ipa
+```
+
 For a prepared, identity-matched mobile workspace, the Simulator stages are:
 
 ```sh
@@ -266,6 +292,9 @@ not a device app. The scripts select a separate device lane with
 </details>
 
 ## Install on your physical iPad
+
+Players: install the IPA PadMint makes with AltStore, SideStore or Sideloadly (see
+[Get GalaxyPad](#get-galaxypad)). The assistant below is a development helper.
 
 Double-click **Install on iPad.command** for native Mac setup dialogs:
 

@@ -71,8 +71,9 @@
 }
 
 - (GalaxyPadEngine)engine {
-    return [NSUserDefaults.standardUserDefaults integerForKey:@"GalaxyPadEngine"] == GalaxyPadEngineNew
-        ? GalaxyPadEngineNew : GalaxyPadEngineOriginal;
+    NSNumber *saved = [NSUserDefaults.standardUserDefaults objectForKey:@"GalaxyPadEngine"];
+    if (saved == nil) return GalaxyPadEngineNew;
+    return saved.integerValue == GalaxyPadEngineNew ? GalaxyPadEngineNew : GalaxyPadEngineOriginal;
 }
 - (void)setEngine:(GalaxyPadEngine)engine {
     [NSUserDefaults.standardUserDefaults setInteger:engine == GalaxyPadEngineNew ? GalaxyPadEngineNew
