@@ -1,4 +1,17 @@
-# Gyro cursor — Preview 4
+# Gyro cursor
+
+## Current release
+
+Gyro Cursor remains available in **0.2.1 → ⋯ → Controls → Gyro Cursor**, under
+the inline Controller section. This Device still works without a controller.
+Off is the default. The New engine pauses gameplay/audio while GalaxyPad UI is
+open. Manual ride modes and the yellow tilt stick are Old engine features;
+they are hidden with the New engine. Physical drift, sensor feel and individual
+controller motion profiles still need broader validation.
+
+The verification list below is the historical Preview 4 feature record, not a
+fresh 0.2.1 sensor test. The current iPhone overlay UI suite passes; the iPad
+suite has the hidden-button overlap described in [0.2.1 notes](RELEASE-0.2.1.md).
 
 Status: included in Preview 4; device and Simulator hosts compile/link. Headless
 Simulator tests execute real UIKit menu actions and production sensor-adapter

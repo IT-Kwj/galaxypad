@@ -1,5 +1,27 @@
 # Save and NAND
 
+## Current New engine and safe updates
+
+For 0.2.1, install the PadMint-built IPA over the existing app with the same
+sideloading tool, Apple ID and bundle identifier. Do not uninstall first. Back up
+important saves before changing signing or installation methods.
+
+Under `Library/Application Support/GalaxyPad/`, the New engine uses
+`NewEngine/NAND/title/00010000/524d4745/data/GameData.bin`; the Old engine uses
+`Wii/title/00010000/524d4745/data/GameData.bin`. The New engine's migration/sync
+code carries over saved progress; preserve both trees and the sync metadata when
+backing up an existing installation. Do not replace one manually with the other
+while the game is running. In-game saving and clean shutdown matter; unsaved
+progress is not protected by copying an older save file.
+
+0.2.1 was installed on the owner's iPhone 14 and iPad Pro with both save sets
+byte-identical before and after. Imported game files were untouched. See
+[release evidence](RELEASE-0.2.1.md) and [install instructions](INSTALL_IPAD.md).
+
+The emulator-state, NAND and module-specific records below concern the Old
+engine. They are historical evidence, not New engine save-state support or a
+claim that every save/recovery scenario has passed.
+
 ## R861 — packaged iPhone file recovery after import
 
 Self-contained Simulator stage7BjbCR (host3de9facf/module32a92fdb) uses private

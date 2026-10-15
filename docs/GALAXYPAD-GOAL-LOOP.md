@@ -1,5 +1,12 @@
 # GalaxyPad goal-based loop
 
+**Historical Old engine record.** The current iPhone/iPad release is 0.2.1,
+built through PadMint with the MacioGalaxy/Petari New engine. Start with
+[STATUS](STATUS.md), [installation](INSTALL_IPAD.md) and the
+[documentation index](README.md). The plans, module requirements, pending gates
+and "current"/"next" statements below describe their dated Old engine builds;
+they do not override current release instructions or establish New engine coverage.
+
 ## September 13: Pull Star fixed in Simulator; performance baseline corrected
 
 Disabled EFB depth access caused the dome target failure. The source now enables

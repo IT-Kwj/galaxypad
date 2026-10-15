@@ -1,5 +1,12 @@
 # EFB readback evidence
 
+**Historical Old engine record.** The current iPhone/iPad release is 0.2.1,
+built through PadMint with the MacioGalaxy/Petari New engine. Start with
+[STATUS](STATUS.md), [installation](INSTALL_IPAD.md) and the
+[documentation index](README.md). The plans, module requirements, pending gates
+and "current"/"next" statements below describe their dated Old engine builds;
+they do not override current release instructions or establish New engine coverage.
+
 ## R604 — common-clock completion gap and scope limit
 
 [Apple GPUEndTime](https://developer.apple.com/documentation/metal/mtlcommandbuffer/gpuendtime)

@@ -1,5 +1,9 @@
 # Isolated drawable acquisition measurement
 
+**Old engine experiment.** This opt-in research is not part of the current
+MacioGalaxy/Petari gameplay path. See the [documentation index](../../docs/README.md)
+and [Old engine deprecation](../../docs/OLD-ENGINE-DEPRECATION.md) before using it.
+
 Build with `python3 experiments/drawable-wait/build.py --build` after other timing
 work releases the host. Without `--build` the script only prepares source copies,
 VFS mappings, frozen probe/test inputs and exact commands. No install or launch.

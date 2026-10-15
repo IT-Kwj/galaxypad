@@ -11,7 +11,7 @@ The Apple integration does not replace or claim authorship of their tools.
 | [Dolphin Emulator contributors](https://github.com/dolphin-emu/dolphin) | Underlying Wii/GameCube hardware, graphics, audio, and input implementation |
 | [ModernGekko-Template](https://github.com/ExpansionPak/ModernGekko-Template) | Pipeline reference |
 | [SunPad](https://github.com/chrissotraidis/sunpad) | Apple integration and touch-control foundation |
-| [Petari — SMGCommunity and contributors](https://github.com/SMGCommunity/Petari) | Galaxy semantic and source-map reference |
+| [Petari — SMGCommunity and contributors](https://github.com/SMGCommunity/Petari) | Super Mario Galaxy decompilation underlying MacioGalaxy and the New engine; also a historical semantic reference for the Old engine |
 | [MacioGalaxy — classicrob](https://github.com/classicrob/MacioGalaxy) | Native port of the Petari decompilation that the New engine (`galaxypad-engine`) is based on |
 | [Wiimms ISO Tools](https://wit.wiimm.de/) | Game-image inspection and extraction |
 

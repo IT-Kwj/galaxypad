@@ -1,5 +1,9 @@
 # Neutral gameplay pointer experiment
 
+**Old engine experiment.** This opt-in research is not part of the current
+MacioGalaxy/Petari gameplay path. See the [documentation index](../../docs/README.md)
+and [Old engine deprecation](../../docs/OLD-ENGINE-DEPRECATION.md) before using it.
+
 The September 13 interim Simulator host7 Observatory captures show the existing
 neutral camera model applies to mode25 as well as the separately audited menu.
 At a 20-degree total pitch, 25-degree total yaw, and sensor height .1, actual

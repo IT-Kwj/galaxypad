@@ -1,5 +1,9 @@
 # Fused portable vertex experiment (2026-09-13)
 
+**Old engine experiment.** This opt-in research is not part of the current
+MacioGalaxy/Petari gameplay path. See the [documentation index](../../docs/README.md)
+and [Old engine deprecation](../../docs/OLD-ENGINE-DEPRECATION.md) before using it.
+
 **Keep experimental; do not promote on this result.** A single fused AOT converter reduced its source-extracted CPU microbenchmark by approximately 33%, but a stationary Observatory Simulator A/B/A measured **45.574 → 45.865 → 45.114 FPS**. The candidate's +0.64% versus the first control and +1.66% versus the returning control do not establish a meaningful whole-game benefit given roughly 1% control drift. This does not establish whether it could benefit a profiled A15 bottleneck.
 
 The private format diagnostic counted 65,289,591 vertices in 13,045,760 batches after visually verifying the 121-star Observatory. One converter structure covered 72.61975% of vertices: VCD `00007e00,00000003`, VAT `40f76c07,c8241209,04824120` after masking only position and texture-0 fractional scale bits. Its stages are indexed u16 XYZ signed16 position, indexed u16 signed16 normal N, indexed u16 RGBA8888 color, indexed u16 ST signed16 texture, and the existing skip stage. The guard retains all other format bits; scales remain runtime values. Other formats retain the generic loader.

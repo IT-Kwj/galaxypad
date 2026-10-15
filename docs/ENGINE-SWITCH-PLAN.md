@@ -1,7 +1,18 @@
 # Engine switch plan
 
+## Current outcome, October 15, 2026
+
+The integration shipped in 0.2.0; **0.2.1 (7217)** is now public with the menu
+responsiveness repair and grouped controls. New is the default. PadMint 0.5.2+
+builds it on the player's Mac without an Old engine game module. The owner has
+played the New engine on iPhone and iPad. See [release evidence](RELEASE-0.2.1.md)
+and [STATUS](STATUS.md) for the actual acceptance limits.
+
+The milestone plan and dated progress below preserve their original sequence;
+earlier "not run", "unreleased" and Original-default statements are historical.
+
 **Goal:** GalaxyPad gets a setting that chooses its game engine: **Original**
-(the engine it ships today) or **New** (the game compiled natively from the
+(now deprecated) or **New** (the game compiled natively from the
 Petari decompilation). The New engine brings everything the Galaxy Native test
 app has. This is the working plan for that change, done in milestones over
 several sessions. Read it with the [native engine plan](NATIVE-ENGINE-PLAN.md),
@@ -16,7 +27,7 @@ pinned at `ref/galaxypad-engine`. It also runs as a separate test app
 
 ## What the player gets
 
-- **Settings → Engine: New / Old.** The choice applies the next time the
+- **⋯ → Engine (Next Launch): New / Old.** The choice applies the next time the
   app opens, because each engine runs the whole app while it plays.
 - **New** is the default since 0.2.0 (the owner approved it on 13 October 2026
   after playing it on the iPad Pro). **Old** stays as it was for installs that

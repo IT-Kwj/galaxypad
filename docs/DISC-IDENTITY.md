@@ -16,7 +16,8 @@ and the runtime stops. Save/NAND paths are separate. At least 9 GiB free is
 required, with additional capacity for larger containers. The developer command
 `scripts/verify-disc.sh` intentionally still checks the exact reference container
 for reproducible code generation; it is not the user-import compatibility test.
-These source changes are not in the already-published Preview 2 binary.
+This compatibility policy is used by the current 0.2.1 importer. Older Preview 2
+binaries predate it; historical container hashes are not the entire acceptance rule.
 
 ## Immutable source image
 

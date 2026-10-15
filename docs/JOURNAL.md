@@ -1,5 +1,19 @@
 # GalaxyPad journal
 
+## October 15, 2026: 0.2.1 published and documentation reconciled
+
+0.2.1 (7217), app `597c382f8d0a22c02065189cbaad80d99627f188`, is the latest
+public source/build-recipe release. PadMint 0.5.2 builds it successfully from the
+published tag with Apple's Python 3.9.6 and an empty folder. Both public downloads
+match their SHA-256 hashes. CI passes; the local host-pressure probe still fails.
+The New engine is MacioGalaxy/Petari; the Old engine is deprecated. This release
+adds the menu pause/run-loop repair and grouped menu. Device installs preserve
+saves; menu feel by hand, the iPad hidden-button overlap and full-game completion
+remain separate checks. [Release record](RELEASE-0.2.1.md).
+
+The README, installation, support and architecture docs now distinguish this
+release from older AOT research. Dated entries below are preserved as history.
+
 ## Preview 3 release authorization and iPad feedback
 
 The owner subsequently reported build 7166 working great on the iPad and explicitly

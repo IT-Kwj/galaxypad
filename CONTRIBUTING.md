@@ -10,7 +10,7 @@ or signing material.
 
 GalaxyPad is the Apple app. Its controls, import flow, platform integration and
 packaging live here. A fork is a maintained copy of a dependency: changes to the
-runtime or compiler belong in the ModernGekko, RecompCore or DolRecomp fork as
+runtime or compiler belong in galaxypad-engine, ModernGekko, RecompCore or DolRecomp as
 reviewable commits. GalaxyPad consumes those commits through pinned submodules.
 Do not add another automatic bootstrap patch for a runtime or compiler change.
 
@@ -36,7 +36,7 @@ Dependency updates must pin full commit IDs, including nested submodules, and
 update the lock and documentation together. Do not use floating references or
 overwrite local modifications to make a check pass.
 
-Prepare the three pinned runtime/compiler repositories for source checks, run the
+Prepare the pinned New engine and Old engine runtime/compiler repositories for source checks, run the
 focused test for the changed component, then the complete repository suite:
 
 ```sh

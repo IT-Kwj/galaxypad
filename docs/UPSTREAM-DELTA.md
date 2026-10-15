@@ -1,5 +1,12 @@
 # Upstream delta
 
+**Historical Old engine record.** The current iPhone/iPad release is 0.2.1,
+built through PadMint with the MacioGalaxy/Petari New engine. Start with
+[STATUS](STATUS.md), [installation](INSTALL_IPAD.md) and the
+[documentation index](README.md). The plans, module requirements, pending gates
+and "current"/"next" statements below describe their dated Old engine builds;
+they do not override current release instructions or establish New engine coverage.
+
 Historical experiment ledger. Since Preview 2, runtime/compiler changes live in
 [maintained forks with pinned submodules](DEPENDENCIES.md). Patch/bootstrap
 descriptions below record earlier work and are not the current build workflow.

@@ -10,7 +10,7 @@ This review re-reads the performance record since Preview 2, checks the build
 configuration that actually ships to phones, and runs two new compiler
 experiments. It changes no product source, module or installed app. The
 experiment tooling and results are in
-[experiments/register-residency](../experiments/register-residency/README.md).
+[experiments/register-residency](https://github.com/chrissotraidis/galaxypad/blob/360809edcd3bdfe0dc6d48772665646357135ca1/experiments/register-residency/README.md).
 
 ## Where the phone's time goes
 

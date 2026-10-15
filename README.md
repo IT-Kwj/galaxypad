@@ -10,26 +10,24 @@
   <a href="https://discord.gg/xwHfUD2bxW"><img alt="Join the GalaxyPad Discord" src="https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?logo=discord&amp;logoColor=white"></a>
 </p>
 
-**Super Mario Galaxy on iPhone, iPad, and Apple silicon Mac through ahead-of-time recompilation.**
-GalaxyPad is an experimental Apple app with Metal rendering, touch controls, and
-controller support. It started as a personal experiment and has continued to grow.
+**Super Mario Galaxy running natively on iPhone and iPad.**
+GalaxyPad 0.2.1 uses the **New engine**: a maintained port of
+[MacioGalaxy](https://github.com/classicrob/MacioGalaxy), built on the
+[Petari decompilation](https://github.com/SMGCommunity/Petari). The game code is
+compiled directly for Apple silicon, with Metal rendering, touch controls and
+controller support. On the owner's iPhone 14, the New engine runs at about 60 FPS;
+see [tested builds and limits](docs/RELEASE-0.2.0.md#what-was-tested).
 
-The game's PowerPC code is recompiled ahead of time into native ARM64 code; the
-Dolphin-derived runtime supplies graphics, audio, and other Wii hardware behavior.
-You supply your own supported game image; GalaxyPad does not download or include it.
+Build your own copy with [PadMint](https://github.com/chrissotraidis/padmint/releases/latest)
+on an Apple silicon Mac, then import your own supported game image in the app.
+There is no public prebuilt IPA. The release is experimental; full-game completion
+has not been verified.
 
-Built with [ModernGekko](https://github.com/ExpansionPak/ModernGekko), by Hyperway,
-ExpansionPak and contributors, and [DolRecomp](https://github.com/ExpansionPak/DolRecomp),
-on the [RecompCore](https://github.com/ExpansionPak/RecompCore) /
-[Dolphin](https://github.com/dolphin-emu/dolphin) runtime. See [full credits](CREDITS.md),
-including the SunPad Apple integration this project builds on.
-
-**Maintained dependency forks:** [ModernGekko](https://github.com/chrissotraidis/ModernGekko),
-[RecompCore](https://github.com/chrissotraidis/RecompCore), and
-[DolRecomp](https://github.com/chrissotraidis/DolRecomp).
-GalaxyPad is the Apple app repository; its runtime and compiler changes live in
-these forks, selected through pinned submodules. See the
-[source graph and upstream links](docs/DEPENDENCIES.md#maintained-source-graph).
+The deprecated **Old engine** used ModernGekko, DolRecomp and a Dolphin-derived
+runtime for ahead-of-time recompilation. Its source and the Mac development app
+remain available, but PadMint's iPhone/iPad builds contain no Old engine game
+module. See [engine differences](docs/OLD-ENGINE-DEPRECATION.md),
+[full credits](CREDITS.md) and the [pinned dependency graph](docs/DEPENDENCIES.md).
 
 ![Mario exploring a grassy planet in GalaxyPad](docs/images/galaxypad-mario-planet.png)
 
@@ -42,11 +40,14 @@ these forks, selected through pinned submodules. See the
 
 ## Get GalaxyPad
 
-GalaxyPad 0.2.0 for iPhone and iPad is built on your own Apple silicon Mac by
-[PadMint](https://github.com/chrissotraidis/padmint). There is no prebuilt download.
+[GalaxyPad 0.2.1](https://github.com/chrissotraidis/galaxypad/releases/tag/v0.2.1)
+for iPhone and iPad is built on your own Apple silicon Mac by
+[PadMint 0.5.2 or newer](https://github.com/chrissotraidis/padmint/releases/latest).
+PadMint selects the latest release automatically. There is no prebuilt download.
 
 1. Install [Xcode](https://apps.apple.com/app/xcode/id497799835) 26 or newer with
-   its iOS platform, and open it once.
+   its iOS platform, and open it once. Select that Xcode in **Settings → Locations →
+   Command Line Tools**; Command Line Tools alone are not enough.
 2. Start PadMint, choose **GalaxyPad** and **iPhone / iPad**. The first build
    downloads its sources and tools and takes a while; it needs about 20 GB free.
 3. Install the `.ipa` PadMint makes with AltStore, SideStore or Sideloadly.
@@ -54,36 +55,33 @@ GalaxyPad 0.2.0 for iPhone and iPad is built on your own Apple silicon Mac by
    to keep your saves; don't uninstall first.
 4. Open GalaxyPad, tap the three-dot menu → **Game Data & Saves** → **Import or
    Reimport Game Data**, and choose your own Super Mario Galaxy (USA, RMGE01
-   revision 0) WBFS image. Open GalaxyPad again when it says so.
+   revision 0) WBFS image. Keep at least **9 GiB free on the device** for import.
+   Open GalaxyPad again when it says so. See the [installation guide](docs/INSTALL_IPAD.md).
 
 The first time the game starts, it prepares its shaders for a few minutes; tap to
 start sooner and the rest finishes in the background.
 
 ## Current status
 
-**GalaxyPad 0.2.0** plays with the **New engine** by default: the game's own code
-built natively for iPhone and iPad, with GalaxyPad's touch controls, controller
-support and three-dot menu over it. On the owner's iPad Pro it runs at 120 FPS with
-Smooth Motion; an iPhone 14 holds about 60 FPS. Saves carry over from earlier
-GalaxyPad versions. See the [0.2.0 release notes](docs/RELEASE-0.2.0.md) for what
-was tested and what is still open.
-
-The **Old engine** (ahead-of-time recompiled Wii code on a Dolphin-derived runtime)
-is still in the source but not in PadMint's builds. Earlier previews used it; see
-the [Preview 4 notes](docs/PREVIEW-2026-09-19.md).
+**0.2.1 (build 7217)** fixes the slow three-dot menu: the New engine pauses the
+game and audio while GalaxyPad menus, sheets or alerts are open, then resumes.
+The menu is shorter and grouped; Ball & Ray settings and the yellow tilt stick
+are hidden with the New engine, which handles those rides through the main stick.
 
 | Area | Current result |
 | --- | --- |
-| Game setup | Exact USA `RMGE01`, revision 0 input validation and local import |
-| Engine | New engine by default: 60 FPS, 120 FPS with Smooth Motion on ProMotion screens |
-| Controls | Touch and controller input, gyro cursor, editable touch layouts; the New engine steers the Star Ball and Ray with the stick |
-| Platforms | iPhone and iPad, built by PadMint on an Apple silicon Mac; the Mac app is a development package with the Old engine |
-| Release | 0.2.0; full-game completion is not yet verified |
+| Engine | MacioGalaxy/Petari native game code; New engine is the default since 0.2.0 |
+| Performance | About 60 FPS observed on the owner's iPhone 14; 120 FPS presentation with Smooth Motion on the owner's ProMotion iPad Pro; not an every-device or full-game guarantee |
+| Controls | Touch controls, controller mapping, gyro cursor and editable touch layouts |
+| Install | PadMint 0.5.2+ on an Apple silicon Mac; in-app USA RMGE01 revision 0 WBFS import |
+| Update | Install in place with the same sideloading tool, Apple ID and bundle identifier; saves were verified unchanged on both test devices |
+| Build verification | Exact release commit passed CI and PadMint player checks before tagging and after publication |
+| Remaining checks | Full-game completion, hands-on verification of the menu repair, and an iPad Simulator overlap check involving the hidden 1 button |
 
-See [current status](docs/STATUS.md), [performance evidence](docs/PERFORMANCE-2026-09-12.md),
-[release readiness](docs/RELEASE-READINESS.md), and the [development journal](docs/JOURNAL.md)
-for exact tested builds and remaining issues. Simulator results do not establish
-physical-device performance.
+Read the [0.2.1 release notes](docs/RELEASE-0.2.1.md), [current status](docs/STATUS.md)
+and [documentation index](docs/README.md). The local repository suite still stops
+at a host-counter probe on the maintainer's Mac; the complete suite passes in CI.
+Device installation and automated tests are not full gameplay acceptance.
 
 ## Screenshots
 
@@ -106,22 +104,14 @@ included unchanged; individual HUD readings are not sustained-performance claims
 <details>
 <summary><strong>Is this native recompilation or emulation?</strong></summary>
 
-Both techniques are involved. Super Mario Galaxy’s PowerPC game code is
-recompiled ahead of time into ARM64 machine code that executes directly on
-Apple silicon. The game still expects Wii hardware, so a Dolphin-derived runtime
-provides the graphics, audio/DSP, memory, timing, and input behavior it needs,
-using Metal for rendering. Interpreter fallbacks remain for code outside the
-recompiled coverage; iOS uses no runtime PowerPC JIT.
+The current iPhone/iPad build compiles the game's decompiled source directly
+into native ARM64 code, through MacioGalaxy and Petari, and renders with Metal.
+It does not run the game's PowerPC instructions through a Wii CPU emulator.
 
-That describes the **Old engine**. The **New engine**, the default since 0.2.0, is
-the game's own code rebuilt as a native app (see [credits](CREDITS.md)), drawing with
-Metal and needing no Wii hardware model.
-
-The precise description of the Old engine is **ahead-of-time recompiled game code on a
-Dolphin-derived compatibility runtime**. GalaxyPad is a game-specific Apple app,
-not a general Wii loader or a from-scratch source port. Native ARM64 execution
-removes runtime translation for the recompiled code; it does not remove the
-cost of reproducing Wii hardware behavior.
+The deprecated Old engine uses **ahead-of-time recompiled game code on a
+Dolphin-derived compatibility runtime**. Its graphics, audio, memory and timing
+model, interpreter fallbacks and generated module belong to that older path;
+they do not describe the New engine's gameplay. See [credits](CREDITS.md).
 
 </details>
 
@@ -145,21 +135,15 @@ Yes: PadMint builds it on your Mac. See [Get GalaxyPad](#get-galaxypad).
 <details>
 <summary><strong>Does it run at 60 FPS?</strong></summary>
 
-With the New engine, yes: about 60 FPS on an iPhone 14, and 120 FPS with Smooth
-Motion on a ProMotion iPad Pro. The rest of this answer is about the Old engine.
+The owner reports smooth gameplay on iPhone 14, and the New engine has recorded
+about 60 FPS there. The owner's ProMotion iPad Pro also runs with **Smooth Motion**,
+which provides 120 FPS presentation. These are results from specific devices and
+scenarios, not a guarantee for every phone, level or thermal condition. See the
+[0.2.0 device evidence](docs/RELEASE-0.2.0.md#what-was-tested).
 
-Lighter scenes reach 60 FPS. Heavy scenes still slow down, and users still report
-audio underruns. The current depth-enabled heavy-scene Simulator result is about
-45–49 frame events/s. See [performance evidence](docs/PERFORMANCE-2026-09-12.md)
-for the measurement limits and the [current refinement pass](docs/REFINEMENT-2026-09-15.md)
-for device findings and the next experiments. A screenshot at 60 does not establish
-a consistent 60 FPS experience.
-
-On an iPhone 14 at 1x, the heavy Comet Observatory area measured 33–38 FPS when
-the phone was hot and 45–53 FPS in busy areas when cool; use 1x on iPhone and let
-the phone cool if it slows down. iPad Pro (M2) runs much closer to 60. The
-[September 26 iPhone handoff](docs/IPHONE-PERFORMANCE-2026-09-26.md) lists the
-open problems and the planned compiler work.
+The 33–53 FPS iPhone measurements in September's performance logs describe the
+Old engine. They are preserved as historical research, not current New engine
+performance or setup instructions.
 
 </details>
 
@@ -171,7 +155,7 @@ appears, then press and hold A. On the default controller mapping, right shoulde
 also provides A so your thumb can stay on the aiming stick; right trigger provides
 B. Touch controls can be moved and resized.
 
-Pause, touch Start +, and Xbox Menu open Galaxy's original pause menu. Its options
+Touch + and controller Menu / Start open Galaxy's original pause menu. Its options
 depend on the scene; supported levels offer a return to the Observatory. Xbox
 View/Select separately freezes and resumes the app. See
 [Input and pointer](docs/INPUT-AND-POINTER.md) for mappings and tested behavior.
@@ -181,7 +165,7 @@ View/Select separately freezes and resumes the app. See
 <details>
 <summary><strong>Will updates preserve my save?</strong></summary>
 
-In-place installation is the development update path. Uninstalling the app can
+Install updates in place with the same sideloading tool, Apple ID and bundle identifier. Uninstalling the app can
 remove its local data. Back up saves before changing installation or signing
 boundaries; see [save and NAND handling](docs/SAVE-AND-NAND.md).
 
@@ -190,12 +174,12 @@ boundaries; see [save and NAND handling](docs/SAVE-AND-NAND.md).
 <details>
 <summary><strong>How can I report a problem?</strong></summary>
 
-Open the three-dot menu → **Report a Problem**, describe the issue, and review
+Open the three-dot menu → **Help & Feedback → Report a Problem…**, describe the issue, and review
 the GitHub draft with its device/build and runtime context. **Open GitHub Draft**
 opens GalaxyPad's issue form for you to review and submit.
 
-Diagnostic logs are optional and off by default. Enable them in the preview,
-review the sanitized report, and use **Share Log** to save a copy for manual
+Diagnostic logs are optional and off by default. Enable **Help & Feedback → Detailed Performance Logging (Next Launch)**,
+restart as requested, review the report, and use **Share Diagnostic Log** to save a copy for manual
 attachment to the issue. Nothing is uploaded or submitted automatically. Never
 attach game images, extracted data, saves, or signing material. The tracker is
 public; a GitHub account is required to submit an issue.
@@ -206,7 +190,7 @@ community discussion.
 
 ## Supported game data
 
-The supported game remains **USA RMGE01, revision 0**. Preview 3 validates supported executable content in bounded single-disc
+The supported game is **USA RMGE01, revision 0**. The importer validates supported executable content in bounded single-disc
 WBFS containers, allowing compatible differences in container layout. The canonical
 development image remains pinned in [disc identity](config/galaxypad-disc.json). Other
 regions/revisions, ISO and split/multidisc WBFS remain unsupported. See the
@@ -219,52 +203,10 @@ evidence in ignored local storage. Never commit those files.
 
 ## Build from source
 
-<details>
-<summary><strong>Developer prerequisites and build commands</strong></summary>
-
-Development currently targets Apple silicon with full Xcode and its iOS SDKs,
-CMake, Ninja, and the pinned dependencies listed in
-[DEPENDENCIES](docs/DEPENDENCIES.md) and the [dependency lock](config/dependencies.lock.json).
-GalaxyPad keeps its runtime and compiler changes in maintained forks—copies of
-the upstream projects with the Apple changes recorded as commits. The app selects
-exact versions through submodules; it does not rename those tools or claim their
-original work. See [the dependency guide](docs/DEPENDENCIES.md) for the source graph.
-Configured minimums are macOS 14 and iOS/iPadOS 16; these are not tested-device
-compatibility promises. The pinned Intel WIT tool also requires Rosetta.
-
-**The mobile build is currently tied to accepted local module and PGO artifacts.**
-It is not yet a one-command clean-clone build. Scripts reject mismatched inputs;
-do not bypass their identity checks to make a build succeed.
-
-Run commands from the repository root. Source setup and exact-image verification:
-
-```sh
-bash scripts/bootstrap-dependencies.sh
-bash scripts/verify-disc.sh ref/supermariogalaxy.wbfs
-```
-
-For source checks alone, `bash scripts/bootstrap-dependencies.sh --sources-only`
-prepares ModernGekko, RecompCore and DolRecomp without their third-party build
-dependencies. The default command above also initializes the required Apple build
-dependencies. Add `--references` when you need the optional pinned SunPad, Petari
-and template research references.
-
-With the verified extraction already prepared at `generated/extracted/run1`,
-the desktop stages are:
-
-```sh
-bash scripts/build-desktop-tools.sh
-bash scripts/generate-aot.sh
-bash scripts/build-module.sh
-bash scripts/build-macos-app.sh
-```
-
-The default desktop package is `generated/macos/GalaxyPad.app`. Read
-[executable coverage](docs/EXECUTABLE-COVERAGE.md) and the build scripts before
-replacing an accepted module with a newly generated one.
-
-The iPhone/iPad app with the New engine, and no Old engine module, builds from a
-clean clone with no game file. These are the steps PadMint runs (`padmint.json`):
+Players should use [PadMint](#get-galaxypad). Developers can run the same recipe
+from a clean checkout without a game image, private AOT module or PGO cache.
+Use an Apple silicon Mac, full Xcode 26+ with its iOS platform, CMake and Ninja.
+Run from the repository root:
 
 ```sh
 bash scripts/bootstrap-dependencies.sh
@@ -274,38 +216,29 @@ GALAXYPAD_IOS_SDK=iphoneos bash scripts/build-ios-simulator-app.sh
 bash scripts/package-padmint-ipa.sh GalaxyPad.ipa
 ```
 
-For a prepared, identity-matched mobile workspace, the Simulator stages are:
+The unsigned IPA is personal; sign and install it with your sideloading tool.
+The build still links ModernGekko's core for app startup/import support, but
+omits the Old engine game module. See [dependencies](docs/DEPENDENCIES.md) and
+[deprecation scope](docs/OLD-ENGINE-DEPRECATION.md).
 
-```sh
-bash scripts/build-ios-simulator-core.sh
-bash scripts/provision-ios-simulator-core.sh
-bash scripts/build-ios-simulator-module.sh
-bash scripts/build-ios-simulator-app.sh
-```
+For source checks, `bash scripts/bootstrap-dependencies.sh --sources-only`
+prepares galaxypad-engine, ModernGekko, RecompCore and DolRecomp without the
+third-party build libraries. Then run `bash scripts/check-repository.sh`.
+`--references` also prepares optional SunPad, Petari and template references.
 
-The app is produced under `generated/build/ios-simulator-app/`. A Simulator app is
-not a device app. The scripts select a separate device lane with
-`GALAXYPAD_IOS_SDK=iphoneos`; signing and private staging are separate steps in
-`scripts/stage-private-ios-device.sh`. See [mobile implementation](docs/MOBILE-IMPLEMENTATION.md), the
-[original PRD](docs/GALAXYPAD-PRD.md), and [active goal loop](docs/GALAXYPAD-GOAL-LOOP.md).
+Configured minimums are iOS/iPadOS 16 and macOS 14 for the Mac development app;
+they are not a tested-device compatibility matrix. The historical Old engine
+[mobile build/staging instructions](docs/INSTALL_IPAD.md#historical-old-engine-development-workflow)
+and [module coverage](docs/EXECUTABLE-COVERAGE.md) retain their own private-input
+and identity checks. A Simulator package is not a device IPA. Do not bypass
+input guards or combine mismatched runtime/module artifacts.
 
-</details>
+## Install on your physical iPhone or iPad
 
-## Install on your physical iPad
-
-Players: install the IPA PadMint makes with AltStore, SideStore or Sideloadly (see
-[Get GalaxyPad](#get-galaxypad)). The assistant below is a development helper.
-
-Double-click **Install on iPad.command** for native Mac setup dialogs:
-
-- Export the current private unsigned IPA and reveal it in Finder.
-- Install a signed GalaxyPad app onto your connected iPad.
-- Open signing and first-launch instructions.
-
-Follow [Install on iPad](docs/INSTALL_IPAD.md). An Apple signing identity and
-matching provisioning profile are still required; the assistant does not create
-them or ask for your Apple password. The candidate is experimental; installation and early iPad gameplay do not
-establish release readiness. No game image or save is included or uploaded.
+Install the IPA PadMint makes with AltStore, SideStore or Sideloadly. Follow
+[Install on iPhone or iPad](docs/INSTALL_IPAD.md) for first launch and safe updates.
+**Install on iPad.command** is a historical Old engine development helper, not
+the installer or export path for the current PadMint build.
 
 ## First launch and game data
 
@@ -314,7 +247,7 @@ The host validates identity rather than accepting arbitrary games. Import requir
 at least 9 GiB available for the private image copy, extraction and headroom;
 existing data and saves are not counted as reclaimable space.
 
-For a private self-contained Simulator bundle, stage the built host and module
+For a private self-contained **Old engine** Simulator bundle, stage the built host and module
 with `GALAXYPAD_IOS_SDK=iphonesimulator bash scripts/stage-private-ios-device.sh APP_PATH`.
 Despite its historical name, this script validates either SDK explicitly; its
 default remains device staging. Sign the copied Simulator module and then the
@@ -330,83 +263,57 @@ Simulator or replace a save merely to resolve a launch problem.
 
 ## Controls and the three-dot menu
 
-The active mobile overlay adapts SunPad's actual controls/editor and native
-`UIMenu`, with Galaxy-specific Wii Remote + Nunchuk actions. It is not a claim
-that Galaxy originally supports a GameCube controller.
+GalaxyPad adapts SunPad's touch controls, layout editor and native menu for Galaxy.
+Movement, pointer aim, A/B actions and Spin have distinct input paths.
 
-- Movement, pointer aim, A/B actions and Spin have distinct input paths.
-- Controls includes a Touch Control Guide, touch visibility, layout settings, controller mapping, and
-  optional tilt and extra Wii buttons. Rarely used buttons need not stay visible.
-- **Controls → Stick Mode (Touch / Controller)** selects **Normal**, **Ray Surfing**,
-  or **Star Ball** for this app session. Ride modes route the controller left stick
-  and touch movement stick to Wii tilt and hide pointer aim. Select the mode when
-  boarding; return to Normal for walking and pointer menus. There is no automatic
-  stage detection. Ray uses A to accelerate and Spin to jump; Star Ball uses A to
-  jump and an upright remote pose. Releasing the stick returns to the resting tilt;
-  it does not override the game's momentum or braking physics.
-- Touch Tilt Stick offers 0.5× / 1× / 1.5× sensitivity, vertical inversion and
-  recenter. These affect only touch tilt, not movement or controller input;
-  the optional tilt stick also uses the selected ride pose. The new ride modes
-  still require physical gameplay validation; gyro ride tilt is not implemented.
-  See [ride-control investigation](docs/RIDE-CONTROLS.md).
-- **Controls → Gyro Cursor → This Device / Controller** enables gyro aiming for
-  the Star Pointer. Off is the default. This Device uses the iPhone/iPad's motion
-  sensors; Controller uses the active controller's motion profile when supported.
-  Sensitivity (0.5× / 1× / 1.5×), vertical inversion and Recenter are in the same
-  menu. Clicking the right stick also recenters. The right stick adjusts gyro aim;
-  a held touch takes priority, and gyro resumes from that touch position on release.
-  Gyro aiming suspends during ride modes, native menus, pause and backgrounding.
-  Sensor gaps freeze angular movement while preserving stick adjustment. Missing
-  motion support leaves touch/stick controls available and shows a status message.
-  These paths have synthetic Simulator coverage; physical sensor feel, drift and
-  retail pointer interactions still need validation. See [gyro details](docs/GYRO-CURSOR.md).
-- Touch aiming in current source (after Preview 4, not yet released) uses a
-  recalibrated virtual pointer so a tap lands under the finger instead of above
-  and outside it. Player confirmation in gameplay is still pending; see
-  [Input and pointer](docs/INPUT-AND-POINTER.md).
-- Display contains rendering options; unsupported aspect-ratio choices are
-  currently disabled. Higher rendering resolution is not a CPU slowdown fix.
-- Audio contains main-volume presets and mute, preserving the chosen level when
-  unmuted. Packaged Simulator menu/stop/relaunch retention is checked; audible
-  output validation and separate Wii Remote speaker volume are still pending.
-- Game-data actions, diagnostic sharing, About and confirmed Stop are available
-  through the native menu, subject to host support.
-- After stopping, gameplay controls disappear and **Restart Game** starts a new
-  runtime without closing the app. One packaged iPhone Simulator stop/restart
-  cycle is verified; broader lifecycle and physical-device coverage remain open.
-- Game Data & Save Status shows the supported revision and expected DOL hash,
-  plus imported-image/save-file presence. It does not revalidate data or inspect
-  completed stars; a detected file is not proof of a healthy save.
+- **Display:** render resolution for the next launch, aspect ratio (restart
+  required), Smooth Motion and the FPS counter.
+- **Controls:** Touch and Controller sections. Use **Touch Control Settings… →
+  Move controls** to reposition and resize buttons, then choose **Done**.
+  **Reset This Device Layout** restores that device's positions and sizes.
+- **Controls → Gyro Cursor:** choose This Device or Controller, adjust response,
+  or recenter. Off is the default. The right stick adjusts aim; holding a touch
+  takes priority. Physical drift and each controller's motion support still need
+  validation; see [gyro cursor](docs/GYRO-CURSOR.md).
+- **Star Ball and Ray:** use the main stick with the New engine. Manual ride
+  modes and the yellow tilt stick are Old engine options and are hidden in
+  current PadMint gameplay.
+- **Audio:** main-volume presets and mute. Unmuting preserves your chosen level.
+- **Game Data & Saves:** status, import/reimport and removal of game data. When
+  managing data during gameplay, follow the prompt to close and reopen GalaxyPad
+  into its data-management screen. Saves are separate from imported game data.
+- **Engine (Next Launch):** New is the current engine. Old is marked unavailable
+  in PadMint builds because its game module is not included.
+- **Help & Feedback:** Touch Control Guide, Report a Problem, Share Diagnostic
+  Log, detailed performance logging and About.
+- **Stop Game:** stops the New engine; reopen GalaxyPad to play again. Save in
+  the game first. Closing a menu resumes gameplay; stopping is a separate action.
 
-Exact mappings, pointer limitations and tested interactions live in
-[Input and pointer](docs/INPUT-AND-POINTER.md). The desktop diagnostic defaults
-are WASD movement, mouse pointer, J=A, K=B, U=C, I=Z, L=Spin and Return=Plus.
-These are not a final editable desktop-control specification.
+Touch **+** or controller **Menu / Start** opens Galaxy's own pause screen.
+Controller **View / Select** opens the separate app pause overlay. In 0.2.1,
+GalaxyPad's menus, sheets and alerts also pause the New engine and its audio.
 
-Touch layout, simultaneous input, menu dismissal/input clearing, and small-screen
-usability still require acceptance. Do not infer physical multitouch usability
-from a scripted Simulator test.
+For Pull Stars, aim until the hand cursor appears, then hold A. Right Shoulder
+also provides A so the aiming thumb can stay on the right stick; Right Trigger
+provides B. See [input and pointer](docs/INPUT-AND-POINTER.md).
 
-To adjust controls, open **Controls → Touch Control Settings → Move controls**.
-Select a control to change its size, then choose **Done**. **Reset This Device
-Layout** restores positions and sizes for that device, preserving opacity and
-controller-visibility preferences. Custom positions survive default-layout
-updates. Known phone issues include overlap with Back and some story text. The
-default phone pause position now clears the observed confirmation and plaza views;
-its gameplay pause behavior still needs a conclusive input check.
-These are open layout defects, not a finished touch experience.
+Custom touch positions survive default-layout updates. Automated tests do not
+prove physical multitouch usability. The iPad Simulator suite reports an overlap
+between the stick and the hidden 1 button; the latest menu repair does not change
+control positions. Full-game control coverage remains open.
 
 ## Diagnostics and troubleshooting
 
-Use **Share Diagnostic Log** in the three-dot menu. Review the exported contents
+Use **Help & Feedback → Share Diagnostic Log** in the three-dot menu. Review the exported contents
 before sharing; keep game data, saves, private paths and captured game media out
 of public reports. Include the app/module identity, device or Simulator model,
 scene, steps to reproduce, and whether audio slows with the picture.
 
-**Slow gameplay or cutscenes:** this is an open project defect, not something we
-assume is your machine. Compare the same scene and separate CPU time, presentation,
-audio and host pressure. Experimental native movie decoding is off by default
-and is not a general gameplay fix. See [performance notes](docs/PERF.md).
+**Slow gameplay or cutscenes:** report your device, OS, version, engine, scene,
+render resolution and Smooth Motion setting. First-run shader preparation may
+still be in progress. The September AOT/movie experiments in
+[performance notes](docs/PERF.md) concern the Old engine and are not tuning
+instructions for the current release.
 
 **Input appears frozen:** confirm the game has focus, the menu/editor is closed,
 and controls are enabled. Diagnostic desktop profiles can disable background
@@ -437,6 +344,7 @@ does not prove game completion, smooth presentation, audio, or device readiness.
 | `scripts/`, `tests/` | Build, audit and regression tools |
 | `docs/` | PRD, goal loop, evidence and handoffs |
 | `ref/ModernGekko/` | Pinned runtime fork, with nested RecompCore and DolRecomp dependencies |
+| `ref/galaxypad-engine/` | Pinned MacioGalaxy/Petari New engine |
 | Other `ref/` paths, `generated/` | Local references/data and build/runtime artifacts |
 
 ## Community and support
@@ -451,8 +359,9 @@ with your device, its OS version, and the steps that led to it.
 
 ## Credits, legal and contributing
 
-GalaxyPad builds on SunPad, ModernGekko, RecompCore/Dolphin, DolRecomp and WIT;
-Petari is a source reference. Exact upstream URLs and revisions are recorded in
+GalaxyPad builds on MacioGalaxy and Petari for the New engine, SunPad for Apple
+integration, ModernGekko/RecompCore/Dolphin and DolRecomp for the Old engine,
+and WIT for developer image tooling. Exact upstream URLs and revisions are recorded in
 the [dependency lock](config/dependencies.lock.json). Preserve upstream notices
 and license obligations when adapting code. Nintendo's game and trademarks belong
 to their respective owners; this project is not affiliated with Nintendo.

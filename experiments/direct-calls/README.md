@@ -1,5 +1,9 @@
 # Guarded direct calls on iPhone
 
+**Old engine experiment.** This opt-in research is not part of the current
+MacioGalaxy/Petari gameplay path. See the [documentation index](../../docs/README.md)
+and [Old engine deprecation](../../docs/OLD-ENGINE-DEPRECATION.md) before using it.
+
 Cross-chunk `bl` sites call the target chunk natively after a host boundary
 check, then continue at the caller's label, instead of returning to
 `StaticRecompCore::Run` twice per call. The generator overlay is the existing

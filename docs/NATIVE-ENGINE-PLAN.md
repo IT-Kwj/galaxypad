@@ -1,5 +1,17 @@
 # Native engine plan
 
+## Current outcome, October 15, 2026
+
+The native backend is now GalaxyPad's New engine, integrated and released since
+0.2.0. **0.2.1** is the current public PadMint build. The app and maintained
+engine fork have changed since the separate probe described below. Read
+[STATUS](STATUS.md), [release notes](RELEASE-0.2.1.md) and the
+[engine integration record](ENGINE-SWITCH-PLAN.md) before continuing work.
+
+The original proposal and probe measurements below are historical. Its mod-layer
+and latency ideas are not all shipped features; the old "nothing shipped" and
+"build 7202 unchanged" statements refer only to the dated research session.
+
 **Start here for the next major direction.** Status as of 11 October 2026.
 This plan proposes replacing GalaxyPad's game backend (PowerPC code translated
 ahead of time, running on a Dolphin-derived runtime) with the game compiled

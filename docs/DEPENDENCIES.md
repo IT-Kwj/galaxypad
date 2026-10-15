@@ -1,5 +1,11 @@
 # Dependencies
 
+The current mobile release builds **galaxypad-engine (MacioGalaxy/Petari)** for
+gameplay. ModernGekko's core is still linked for app startup/import support, so
+PadMint also builds it; the Old engine game module is omitted. See
+[deprecation scope](OLD-ENGINE-DEPRECATION.md). The optional `ref/petari` reference
+is separate from the Petari-derived game source already inside galaxypad-engine.
+
 ## Maintained source graph
 
 GalaxyPad remains the Apple app. A fork is a maintained copy of an upstream
@@ -49,14 +55,14 @@ Bootstrap modes:
 # Required Apple dependencies for runtime/app builds.
 bash scripts/bootstrap-dependencies.sh
 
-# Only ModernGekko, RecompCore and DolRecomp for the source test suite.
+# New engine plus ModernGekko, RecompCore and DolRecomp for source checks.
 bash scripts/bootstrap-dependencies.sh --sources-only
 
 # Also prepare pinned, unmodified SunPad, Petari and template research references.
 bash scripts/bootstrap-dependencies.sh --references
 ```
 
-`--sources-only` prepares the three fork repositories with their full histories,
+`--sources-only` prepares galaxypad-engine and the three Old engine fork repositories with their full histories,
 but not the third-party libraries required to compile the runtime. The default
 mode adds the selected Apple build dependencies, including cubeb's nested
 dependencies; it does not download unrelated platform packages such as Qt or

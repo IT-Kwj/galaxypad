@@ -1,5 +1,9 @@
 # EFB readback batching opportunity probe
 
+**Old engine experiment.** This opt-in research is not part of the current
+MacioGalaxy/Petari gameplay path. See the [documentation index](../../docs/README.md)
+and [Old engine deprecation](../../docs/OLD-ENGINE-DEPRECATION.md) before using it.
+
 This experiment measures actual Metal staging-copy encoding. It does not batch,
 remove, reorder, wait for, or otherwise change any GPU operation or depth value.
 Product source and the accepted archive remain unchanged.
