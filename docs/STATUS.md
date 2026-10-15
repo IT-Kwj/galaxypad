@@ -1,6 +1,22 @@
 # GalaxyPad status
 
-## October 15, 2026: GalaxyPad 0.2.1 is public (current)
+## October 16, 2026: GalaxyPad 0.2.2 Files-folder repair
+
+**0.2.2 (7218)** prepares a visible import guide in Documents before starting
+either engine or the import shell. Fresh installations can therefore find
+GalaxyPad in Files. The empty/unavailable folder screen offers **Choose Image**
+directly; instructions explain importing from Downloads or iCloud Drive without
+moving the WBFS first. Existing documents, game data and saves are preserved.
+
+The New engine pin and PadMint recipe are unchanged. Use PadMint 0.5.2+ and
+[the installation guide](INSTALL_IPAD.md). [0.2.2 release evidence](RELEASE-0.2.2.md)
+records fresh-install and update checks; the GitHub release records the exact
+commit, CI and pre/post-publication PadMint player-build outcomes.
+
+This is a setup repair, with no new physical gameplay or performance claim.
+Full-game completion and the older iPad hidden-control overlap remain open.
+
+## October 15, 2026: GalaxyPad 0.2.1 publication (historical)
 
 The latest release is **0.2.1 (7217)**, app revision
 `597c382f8d0a22c02065189cbaad80d99627f188`, built with **PadMint 0.5.2 or newer**

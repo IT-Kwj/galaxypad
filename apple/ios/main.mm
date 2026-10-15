@@ -14,6 +14,7 @@
 #import "GalaxyPadGyroPointer.h"
 #import "GalaxyPadImportTransaction.h"
 #import "GalaxyPadDiscExtractor.h"
+#import "GalaxyPadDocuments.h"
 #include "../shared/GalaxyPadImportActivation.h"
 #include "../shared/GalaxyPadMovementTrace.h"
 #include "GalaxyPadDiscIdentity.h"
@@ -626,25 +627,28 @@ static NSString *GalaxyPadOldEngineModule(void) {
   (void)overlay;
   if (_import || _removingGameData || _preparingEngine) return;
   UIAlertController *notice=[UIAlertController alertControllerWithTitle:@"Import Game Data"
-    message:@"Select your supported RMGE01 revision 0 WBFS image. GalaxyPad makes and verifies a private copy. After verification, the current game stops before data is replaced. Saves are kept. Other image formats are not supported yet."
+    message:@"Choose your USA RMGE01 revision 0 WBFS image directly from Downloads, iCloud Drive, or another Files location. Download it to your device first; it does not need to be in the GalaxyPad folder. GalaxyPad verifies a private copy before replacing installed game data. Saves are kept. Other image formats are not supported yet."
     preferredStyle:UIAlertControllerStyleAlert];
   [notice addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
   __weak GalaxyPadGameViewController *weakSelf=self;
   [notice addAction:[UIAlertAction actionWithTitle:@"Choose Image" style:UIAlertActionStyleDefault
     handler:^(UIAlertAction *action) {
       (void)action;
-      [weakSelf dismissViewControllerAnimated:YES completion:^{
-        // SunPad document-picker flow; open in place because the transaction
-        // owns its cancellable copy rather than creating an extra system copy.
-        UIDocumentPickerViewController *picker=[[UIDocumentPickerViewController alloc]
-          initForOpeningContentTypes:@[UTTypeData] asCopy:NO];
-        picker.delegate=weakSelf;
-        picker.allowsMultipleSelection=NO;
-        picker.shouldShowFileExtensions=YES;
-        [weakSelf presentViewController:picker animated:YES completion:nil];
-      }];
+      [weakSelf chooseGameImage];
     }]];
   [self presentViewController:notice animated:YES completion:nil];
+}
+- (void)chooseGameImage {
+  __weak GalaxyPadGameViewController *weakSelf=self;
+  [self dismissViewControllerAnimated:YES completion:^{
+    // The transaction owns its cancellable private copy.
+    UIDocumentPickerViewController *picker=[[UIDocumentPickerViewController alloc]
+      initForOpeningContentTypes:@[UTTypeData] asCopy:NO];
+    picker.delegate=weakSelf;
+    picker.allowsMultipleSelection=NO;
+    picker.shouldShowFileExtensions=YES;
+    [weakSelf presentViewController:picker animated:YES completion:nil];
+  }];
 }
 - (void)gameOverlayRequestsGameDataStatus:(GalaxyPadGameOverlay *)overlay {
   (void)overlay;
@@ -741,9 +745,10 @@ static NSString *GalaxyPadOldEngineModule(void) {
   NSURL *documents=[NSFileManager.defaultManager URLsForDirectory:NSDocumentDirectory
     inDomains:NSUserDomainMask].firstObject;
   NSError *error=nil;
-  NSArray<NSURL *> *entries=[NSFileManager.defaultManager contentsOfDirectoryAtURL:documents
+  BOOL ready=GalaxyPadPrepareDocuments(documents,&error);
+  NSArray<NSURL *> *entries=ready ? [NSFileManager.defaultManager contentsOfDirectoryAtURL:documents
     includingPropertiesForKeys:@[NSURLIsRegularFileKey,NSURLIsSymbolicLinkKey]
-    options:NSDirectoryEnumerationSkipsHiddenFiles error:&error];
+    options:NSDirectoryEnumerationSkipsHiddenFiles error:&error] : nil;
   NSMutableArray<NSURL *> *images=[NSMutableArray array];
   for (NSURL *entry in entries) {
     NSNumber *regular=nil, *link=nil;
@@ -755,9 +760,11 @@ static NSString *GalaxyPadOldEngineModule(void) {
   [images sortUsingComparator:^NSComparisonResult(NSURL *a,NSURL *b) {
     return [a.lastPathComponent localizedStandardCompare:b.lastPathComponent];
   }];
-  NSString *message=error ? @"The GalaxyPad folder could not be read. Try selecting the image through Import or Reimport Game Data."
+  NSString *location=UIDevice.currentDevice.userInterfaceIdiom==UIUserInterfaceIdiomPad
+    ? @"On My iPad" : @"On My iPhone";
+  NSString *message=error ? @"The GalaxyPad folder is unavailable. Use Choose Image to select your WBFS directly from another Files location."
     : images.count ? @"Choose your supported RMGE01 revision 0 WBFS. A private copy is verified before stopping the game and replacing stored data. Saves stay separate."
-    : @"No WBFS image was found. In Files, place your supported image directly in On My iPad or On My iPhone → GalaxyPad, then try again.";
+    : [NSString stringWithFormat:@"No WBFS image was found in this folder. Use Choose Image to select it directly from Downloads, iCloud Drive, or another Files location. You can also copy it into Files → Browse → %@ → GalaxyPad, then return here to import it. Download cloud files to your device first.",location];
   UIAlertController *alert=[UIAlertController alertControllerWithTitle:@"GalaxyPad Folder"
     message:message preferredStyle:UIAlertControllerStyleAlert];
   __weak GalaxyPadGameViewController *weakSelf=self;
@@ -768,6 +775,8 @@ static NSString *GalaxyPadOldEngineModule(void) {
         [weakSelf dismissViewControllerAnimated:YES completion:^{ [weakSelf beginImport:image]; }];
       }]];
   }
+  [alert addAction:[UIAlertAction actionWithTitle:@"Choose Image" style:UIAlertActionStyleDefault
+    handler:^(UIAlertAction *action) { (void)action; [weakSelf chooseGameImage]; }]];
   [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
   [self presentViewController:alert animated:YES completion:nil];
 }
@@ -1009,6 +1018,15 @@ static BOOL GalaxyPadRunSelectedEngine(int argc, char *argv[], int *status) {
 static BOOL GalaxyPadRunSelectedEngine(int, char *[], int *) { return NO; }
 #endif
 int main(int argc, char *argv[]) {
+  @autoreleasepool {
+    // Run before either engine or the import shell: empty Documents directories
+    // can be omitted by Files. Keep a visible guide there from the first launch.
+    NSURL *documents=[NSFileManager.defaultManager URLsForDirectory:NSDocumentDirectory
+      inDomains:NSUserDomainMask].firstObject;
+    NSError *error=nil;
+    if (!GalaxyPadPrepareDocuments(documents,&error))
+      NSLog(@"GalaxyPad could not prepare its Files folder: %@",error.localizedDescription);
+  }
   int engineStatus = 0;
   if (GalaxyPadRunSelectedEngine(argc, argv, &engineStatus)) return engineStatus;
   // Guarded decoder byte stores: R647/R648/R650 mobile confirmation.

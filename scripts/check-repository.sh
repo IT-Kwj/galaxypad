@@ -69,6 +69,7 @@ bash ./tests/test-mobile-settings.sh
 bash ./tests/test-mobile-stick-routing.sh
 bash ./tests/test-mobile-controller.sh
 bash ./tests/test-controller-pause-events.sh
+bash ./tests/test-documents.sh
 bash ./tests/test-import-activation.sh
 bash ./tests/test-import-transaction.sh
 bash ./tests/test-import-image-policy.sh

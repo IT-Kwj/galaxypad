@@ -1,0 +1,23 @@
+name: GalaxyPadFilesTests
+options:
+  deploymentTarget:
+    iOS: '16.0'
+settings:
+  base:
+    CODE_SIGNING_ALLOWED: NO
+    GENERATE_INFOPLIST_FILE: YES
+    SWIFT_VERSION: '5.0'
+targets:
+  GalaxyPadFilesTests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [FilesUITests.swift]
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: org.galaxypad.files-ui-tests
+schemes:
+  GalaxyPadFilesTests:
+    build:
+      targets:
+        GalaxyPadFilesTests: [test]
+    test:
+      targets: [GalaxyPadFilesTests]

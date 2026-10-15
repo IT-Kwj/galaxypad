@@ -2,11 +2,11 @@
 
 ## Current release and publication boundary
 
-The owner authorized and published GalaxyPad 0.2.1 as a source/build-recipe
+The owner authorized the GalaxyPad 0.2.2 Files-folder fix as a source/build-recipe
 release. PadMint 0.5.2+ builds the New engine locally. Public release assets are
 the recipe and checksums; personal IPAs and game binaries must stay private.
 Do not restore historical binaries or infer authorization for a new binary release.
-See [release evidence](docs/RELEASE-0.2.1.md) and [publication scope](docs/RIGHTS-STATUS.md).
+See [release evidence](docs/RELEASE-0.2.2.md) and [publication scope](docs/RIGHTS-STATUS.md).
 
 Before any future public release, every artifact must pass both `python3 -m padmint audit <artifact>`
 and `python3 ~/.codex/release-gate/release_gate.py <artifact>` on the maintainer's
@@ -62,7 +62,7 @@ Do not describe a change as merged, published or device-validated before it is.
 
 ## Current handoff
 
-Start with [STATUS](docs/STATUS.md), [0.2.1 release evidence](docs/RELEASE-0.2.1.md)
+Start with [STATUS](docs/STATUS.md), [0.2.2 release evidence](docs/RELEASE-0.2.2.md)
 and the [documentation index](docs/README.md). The New engine is the current
 mobile path; the [engine switch plan](docs/ENGINE-SWITCH-PLAN.md) records its
 integration and the [native engine plan](docs/NATIVE-ENGINE-PLAN.md) its research.

@@ -1,5 +1,14 @@
 # GalaxyPad journal
 
+## October 16, 2026: 0.2.2 Files-folder repair
+
+A fresh 0.2.1 iPhone Simulator install reproduced the report: Files displayed
+“On My iPhone is Empty” while GalaxyPad's Documents directory was empty.
+0.2.2 (7218) seeds an import guide before either engine starts, preserves existing
+files, and offers Choose Image directly from the folder-import alert. The
+installation instructions now explain both direct selection and optional folder
+transfer. [Release evidence and reproduction](RELEASE-0.2.2.md).
+
 ## October 15, 2026: 0.2.1 published and documentation reconciled
 
 0.2.1 (7217), app `597c382f8d0a22c02065189cbaad80d99627f188`, is the latest

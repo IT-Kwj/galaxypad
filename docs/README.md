@@ -2,7 +2,7 @@
 
 ## Playing the current release
 
-**GalaxyPad 0.2.1 (7217)** is the current iPhone/iPad release. Use **PadMint 0.5.2
+**GalaxyPad 0.2.2 (7218)** is the current iPhone/iPad release. Use **PadMint 0.5.2
 or newer** on an Apple silicon Mac to build your personal IPA, then import your
 own USA RMGE01 revision 0 WBFS image in the app. There is no public prebuilt IPA.
 
@@ -10,6 +10,7 @@ own USA RMGE01 revision 0 WBFS image in the app. There is no public prebuilt IPA
 | --- | --- |
 | [Get GalaxyPad](../README.md#get-galaxypad) | Short build and install path |
 | [Install on iPhone or iPad](INSTALL_IPAD.md) | Xcode, PadMint, signing, import and updates |
+| [0.2.2 release notes](RELEASE-0.2.2.md) | Files folder and import guidance repair, validation and remaining limits |
 | [0.2.1 release notes](RELEASE-0.2.1.md) | Menu repair, exact revisions, checks and remaining limits |
 | [0.2.0 release notes](RELEASE-0.2.0.md) | Introduction of the New engine and device performance evidence |
 | [Status](STATUS.md) | Current handoff followed by dated history |
