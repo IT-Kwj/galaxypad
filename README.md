@@ -29,8 +29,6 @@ remain available, but PadMint's iPhone/iPad builds contain no Old engine game
 module. See [engine differences](docs/OLD-ENGINE-DEPRECATION.md),
 [full credits](CREDITS.md) and the [pinned dependency graph](docs/DEPENDENCIES.md).
 
-![Mario exploring a grassy planet in GalaxyPad](docs/images/galaxypad-mario-planet.png)
-
 > [!NOTE]
 > **AI disclosure:** GalaxyPad uses substantial AI assistance for code, tests,
 > documentation, debugging and maintenance. Some support replies and maintenance
@@ -88,22 +86,6 @@ Read the [0.2.2 release notes](docs/RELEASE-0.2.2.md), [current status](docs/STA
 and [documentation index](docs/README.md). The local repository suite still stops
 at a host-counter probe on the maintainer's Mac; the complete suite passes in CI.
 Device installation and automated tests are not full gameplay acceptance.
-
-## Screenshots
-
-<table>
-  <tr>
-    <td width="50%"><img src="docs/images/galaxypad-title.png" alt="Super Mario Galaxy title screen in GalaxyPad"></td>
-    <td width="50%"><img src="docs/images/galaxypad-observatory.png" alt="Luigi beside Rosalina and the galaxy map in the Comet Observatory"></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>The original adventure</strong><br>Galaxy's title screen in the native Apple app.</td>
-    <td align="center"><strong>Explore the Observatory</strong><br>Luigi at the galaxy map with 121 stars.</td>
-  </tr>
-</table>
-
-Screenshots supplied by the project owner show development gameplay. They are
-included unchanged; individual HUD readings are not sustained-performance claims.
 
 ## Frequently asked questions
 
