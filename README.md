@@ -362,3 +362,12 @@ forks; new releases require recorded build inputs and artifact identities.
 Do not include retail content, generated game code, modules, or saves.
 Only submit screenshots you are authorized to share. This README is not a distribution license; consult
 [RIGHTS-STATUS](docs/RIGHTS-STATUS.md) before any publication.
+
+## Legal
+
+GalaxyPad is an unofficial, fan-made project. It is not affiliated with,
+endorsed by, or sponsored by Nintendo. Super Mario Galaxy and related names and
+marks are trademarks of Nintendo (and their respective owners). This repository
+contains no game data, disc images, or extracted assets. To use it, you need
+your own legally obtained copy of the game, and you build it yourself on your
+own machine. Please don't share game files or builds made from them.
