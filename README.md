@@ -19,7 +19,8 @@ controller support. On the owner's iPhone 14, the New engine runs at about 60 FP
 see [tested builds and limits](docs/RELEASE-0.2.0.md#what-was-tested).
 
 Build your own copy with [PadMint](https://github.com/chrissotraidis/padmint/releases/latest)
-on an Apple silicon Mac, then import your own supported game image in the app.
+on an Apple silicon Mac, or [on GitHub's free Mac](https://github.com/chrissotraidis/padmint#no-mac-build-on-githubs-mac)
+if you don't have one, then import your own supported game image in the app.
 There is no public prebuilt IPA. The release is experimental; full-game completion
 has not been verified.
 
@@ -42,6 +43,10 @@ module. See [engine differences](docs/OLD-ENGINE-DEPRECATION.md),
 for iPhone and iPad is built on your own Apple silicon Mac by
 [PadMint 0.5.2 or newer](https://github.com/chrissotraidis/padmint/releases/latest).
 PadMint selects the latest release automatically. There is no prebuilt download.
+
+**No Mac?** You can build the iPhone and iPad app on GitHub's free Mac from Windows,
+Linux or any computer with a web browser: follow
+[PadMint's steps](https://github.com/chrissotraidis/padmint#no-mac-build-on-githubs-mac).
 
 1. Install [Xcode](https://apps.apple.com/app/xcode/id497799835) 26 or newer with
    its iOS platform, and open it once. Select that Xcode in **Settings → Locations →
@@ -77,7 +82,7 @@ are hidden with the New engine, which handles those rides through the main stick
 | Engine | MacioGalaxy/Petari native game code; New engine is the default since 0.2.0 |
 | Performance | About 60 FPS observed on the owner's iPhone 14; 120 FPS presentation with Smooth Motion on the owner's ProMotion iPad Pro; not an every-device or full-game guarantee |
 | Controls | Touch controls, controller mapping, gyro cursor and editable touch layouts |
-| Install | PadMint 0.5.2+ on an Apple silicon Mac; in-app USA RMGE01 revision 0 WBFS import |
+| Install | PadMint 0.5.2+ on an Apple silicon Mac, or PadMint on GitHub's free Mac; in-app USA RMGE01 revision 0 WBFS import |
 | Update | Install in place with the same sideloading tool, Apple ID and bundle identifier; saves were verified unchanged on both test devices |
 | Build verification | See the release notes for CI, fresh-install Files checks and PadMint player-build evidence |
 | Remaining checks | Full-game completion, hands-on verification of the menu repair, and an iPad Simulator overlap check involving the hidden 1 button |
